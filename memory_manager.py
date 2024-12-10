@@ -32,17 +32,27 @@ class PersistentMemoryManager:
     
     def save_memory(self):
         """Save all memory components persistently"""
-        with open(self.conversations_file, 'wb') as f:
-            pickle.dump(self.conversations, f)
-        
-        with open(self.rewards_file, 'wb') as f:
-            pickle.dump(self.rewards, f)
-        
-        with open(self.learning_history_file, 'wb') as f:
-            pickle.dump(self.learning_history, f)
-        
-        with open(self.system_state_file, 'wb') as f:
-            pickle.dump(self.system_state, f)
+        try:
+            # Create deep copies to prevent modification during iteration
+            conversations_copy = self.conversations.copy()
+            rewards_copy = self.rewards.copy()
+            learning_history_copy = self.learning_history.copy()
+            system_state_copy = self.system_state.copy()
+            
+            with open(self.conversations_file, 'wb') as f:
+                pickle.dump(conversations_copy, f)
+            
+            with open(self.rewards_file, 'wb') as f:
+                pickle.dump(rewards_copy, f)
+            
+            with open(self.learning_history_file, 'wb') as f:
+                pickle.dump(learning_history_copy, f)
+            
+            with open(self.system_state_file, 'wb') as f:
+                pickle.dump(system_state_copy, f)
+        except Exception as e:
+            print(f"Error saving memory: {e}")
+            # Optional: Add logging or error handling mechanism
     
     def load_memory(self):
         """Load existing memory or initialize if not exists"""

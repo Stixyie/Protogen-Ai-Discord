@@ -1,192 +1,158 @@
 import os
 import json
-import glob
-import logging
-from typing import List, Dict, Optional
-import groq
-from dotenv import load_dotenv
 import time
+import asyncio
+import logging
+from typing import Dict, Any, List
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from groq import Groq
+from dotenv import load_dotenv
 
-class GroqMemoryManager:
-    def __init__(self, memory_dir: str = 'memory_files'):
-        """
-        Initialize Groq Memory Manager for comprehensive memory management
-        
-        :param memory_dir: Directory to store memory files
-        """
-        # Load environment variables
+class UserMemoryManager:
+    def __init__(self, memory_dir: str = 'memory', storage_dir: str = 'memory_storage'):
         load_dotenv()
         
         # Setup logging
-        logging.basicConfig(level=logging.INFO, 
-                            format='%(asctime)s - %(levelname)s: %(message)s')
+        logging.basicConfig(
+            level=logging.INFO, 
+            format='%(asctime)s - %(levelname)s: %(message)s',
+            filename=os.path.join(storage_dir, 'memory_manager.log')
+        )
         
         # Initialize Groq client
-        self.client = groq.Groq(api_key=os.getenv('GROQ_API_KEY'))
+        try:
+            self.groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+        except Exception as e:
+            logging.error(f"Failed to initialize Groq client: {e}")
+            self.groq_client = None
         
-        # Memory management settings
+        # Memory directories
         self.memory_dir = memory_dir
-        os.makedirs(memory_dir, exist_ok=True)
+        self.storage_dir = storage_dir
+        
+        # Create directories if they don't exist
+        os.makedirs(self.memory_dir, exist_ok=True)
+        os.makedirs(self.storage_dir, exist_ok=True)
         
         # User memory tracking
-        self.user_memories = {}
+        self.user_memories: Dict[str, List[Dict[str, Any]]] = {}
         
-        # Chunk size for transmission
-        self.max_chunk_size = 4096
+        # Memory file watcher
+        self.observer = Observer()
     
-    def save_memory_file(self, content: str, user_id: str, file_prefix: str = 'memory') -> str:
-        """
-        Save memory content for a specific user
-        
-        :param content: Memory content to save
-        :param user_id: Unique identifier for the user
-        :param file_prefix: Prefix for memory file name
-        :return: Path to saved memory file
-        """
-        # Generate unique filename
-        timestamp = int(time.time())
-        filename = os.path.join(
-            self.memory_dir, 
-            f"{file_prefix}_{user_id}_{timestamp}.txt"
-        )
-        
-        # Save memory file
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(content)
-        
-        logging.info(f"Memory file saved: {filename}")
-        return filename
-    
-    def load_all_memory_files(self, user_id: str) -> List[str]:
-        """
-        Load all memory files for a specific user
-        
-        :param user_id: Unique identifier for the user
-        :return: List of memory file contents
-        """
-        # Find all memory files for the user
-        memory_files = glob.glob(
-            os.path.join(self.memory_dir, f"*{user_id}*.txt")
-        )
-        
-        # Sort files by timestamp (newest first)
-        memory_files.sort(key=lambda x: os.path.getctime(x), reverse=True)
-        
-        # Read and return contents
-        memory_contents = []
-        for file_path in memory_files:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                memory_contents.append(f.read())
-        
-        return memory_contents
-    
-    def segment_memory(self, memory_content: str) -> List[str]:
-        """
-        Segment memory content into chunks
-        
-        :param memory_content: Full memory content
-        :return: List of memory chunks
-        """
-        return [
-            memory_content[i:i+self.max_chunk_size] 
-            for i in range(0, len(memory_content), self.max_chunk_size)
-        ]
-    
-    def transmit_memory_to_groq(self, user_id: str, user_message: str, max_memory_chunks: int = 5) -> Optional[str]:
-        """
-        Transmit user memories and current message to Groq with improved memory management
-        
-        :param user_id: Unique identifier for the user
-        :param user_message: Current user message
-        :param max_memory_chunks: Maximum number of memory chunks to send
-        :return: Groq API response
-        """
+    def process_memory_file(self, file_path: str):
+        """Process a memory file for a specific user with enhanced error handling"""
         try:
-            # Load all memory files for the user
-            memory_contents = self.load_all_memory_files(user_id)
+            # Extract user ID from filename
+            user_id = os.path.splitext(os.path.basename(file_path))[0]
             
-            if not memory_contents:
-                logging.info(f"No memory files found for user {user_id}. Starting fresh conversation.")
-                memory_contents = ["Initial conversation start"]
+            # Read file contents
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
             
-            # Combine and segment memories, limit to max chunks
-            full_memory = "\n\n".join(memory_contents[:max_memory_chunks])
-            memory_chunks = self.segment_memory(full_memory)
+            # Skip processing if content is empty
+            if not content.strip():
+                logging.warning(f"Empty memory file: {file_path}")
+                return
             
-            # Prepare comprehensive prompt with multiple memory segments
-            comprehensive_prompt = f"""
-            User Memories (Segmented and Limited to {max_memory_chunks} most recent):
-            {memory_chunks[0] if memory_chunks else 'No previous memories'}
+            # Validate Groq client
+            if not self.groq_client:
+                logging.error("Groq client not initialized. Cannot process memory.")
+                return
             
-            Current User Message:
-            {user_message}
-            
-            Please provide a contextually aware and coherent response considering the user's memory context.
-            If no significant context is found, treat this as a new conversation.
-            """
-            
-            # Send to Groq API with enhanced error handling
+            # Process memory with Groq
             try:
-                response = self.client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                response = self.groq_client.chat.completions.create(
+                    model="llama3-8b-8192",
                     messages=[
-                        {"role": "system", "content": "You are an AI assistant with access to user's memory context. Adapt your responses based on available memory."},
-                        {"role": "user", "content": comprehensive_prompt}
+                        {"role": "system", "content": "You are a memory processing assistant. Analyze and summarize the memory content concisely."},
+                        {"role": "user", "content": content}
                     ],
-                    max_tokens=4096,  # Limit response size
-                    temperature=0.7,  # Balanced creativity
-                    top_p=0.9  # Diverse token selection
+                    max_tokens=1024,  # Limit response size
+                    temperature=0.5   # Balanced creativity
                 )
-                
-                # Save the current interaction as a new memory
-                new_memory_content = f"User: {user_message}\nAssistant: {response.choices[0].message.content}"
-                self.save_memory_file(new_memory_content, user_id, file_prefix='interaction')
-                
-                return response.choices[0].message.content
+                processed_content = response.choices[0].message.content
+            except Exception as api_error:
+                logging.error(f"Groq API error processing {file_path}: {api_error}")
+                processed_content = "Memory processing failed"
             
-            except groq.APIError as api_err:
-                logging.error(f"Groq API Error: {api_err}")
-                return f"Sorry, there was an API error: {api_err}"
+            # Store processed memory
+            processed_memory = {
+                'timestamp': time.time(),
+                'original_content': content,
+                'processed_content': processed_content
+            }
+            
+            # Save to user-specific storage
+            user_storage_path = os.path.join(self.storage_dir, f"{user_id}_memories.json")
+            
+            # Load existing memories or create new list
+            try:
+                with open(user_storage_path, 'r', encoding='utf-8') as f:
+                    user_memories = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                user_memories = []
+            
+            user_memories.append(processed_memory)
+            
+            # Save updated memories
+            with open(user_storage_path, 'w', encoding='utf-8') as f:
+                json.dump(user_memories, f, indent=2)
+            
+            logging.info(f"Processed memory for user {user_id}")
             
         except Exception as e:
-            logging.error(f"Comprehensive error in memory transmission: {e}")
-            return None
+            logging.error(f"Comprehensive error processing memory file {file_path}: {e}")
+    
+    def start_memory_watcher(self):
+        """Start watching the memory directory for new files"""
+        class MemoryHandler(FileSystemEventHandler):
+            def __init__(self, memory_manager):
+                self.memory_manager = memory_manager
+            
+            def on_created(self, event):
+                if not event.is_directory:
+                    self.memory_manager.process_memory_file(event.src_path)
         
-    def clean_old_memories(self, user_id: str, max_memories: int = 10):
-        """
-        Clean up old memory files, keeping only the most recent ones
+        event_handler = MemoryHandler(self)
+        self.observer.schedule(event_handler, self.memory_dir, recursive=False)
+        self.observer.start()
+    
+    def stop_memory_watcher(self):
+        """Stop the memory file watcher"""
+        self.observer.stop()
+        self.observer.join()
+    
+    def retrieve_user_memories(self, user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Retrieve recent memories for a specific user"""
+        user_storage_path = os.path.join(self.storage_dir, f"{user_id}_memories.json")
         
-        :param user_id: Unique identifier for the user
-        :param max_memories: Maximum number of memory files to keep
-        """
-        memory_files = glob.glob(
-            os.path.join(self.memory_dir, f"*{user_id}*.txt")
-        )
+        if not os.path.exists(user_storage_path):
+            logging.info(f"No memories found for user {user_id}")
+            return []
         
-        # Sort files by creation time
-        memory_files.sort(key=lambda x: os.path.getctime(x), reverse=True)
-        
-        # Delete old memory files
-        for file_path in memory_files[max_memories:]:
-            try:
-                os.remove(file_path)
-                logging.info(f"Deleted old memory file: {file_path}")
-            except Exception as e:
-                logging.error(f"Error deleting memory file {file_path}: {e}")
+        try:
+            with open(user_storage_path, 'r', encoding='utf-8') as f:
+                memories = json.load(f)
+            
+            # Return most recent memories
+            return memories[-limit:]
+        except Exception as e:
+            logging.error(f"Error retrieving memories for user {user_id}: {e}")
+            return []
 
 # Example usage
+async def main():
+    memory_manager = UserMemoryManager()
+    memory_manager.start_memory_watcher()
+    
+    try:
+        # Keep the script running
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        memory_manager.stop_memory_watcher()
+
 if __name__ == "__main__":
-    memory_manager = GroqMemoryManager()
-    
-    # Example: Save a memory file
-    memory_manager.save_memory_file(
-        "This is a sample memory for user123", 
-        "user123"
-    )
-    
-    # Example: Transmit memory to Groq
-    response = memory_manager.transmit_memory_to_groq(
-        "user123", 
-        "Tell me about my previous memories"
-    )
-    print(response)
+    asyncio.run(main())

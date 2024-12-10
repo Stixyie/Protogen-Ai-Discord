@@ -12,9 +12,9 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 - 🏆 Konuşma kalitesini değerlendiren ve optimize eden gelişmiş ödül hesaplama algoritması
 
 ### 2. 🌐 Gelişmiş Web Arama Entegrasyonu
+- 🌐 Derin İnternet Araması tam 300'e Kadar Web Sitesi Tarama
 - 🌍 Otomatik olarak güncel bilgileri toplama yeteneği
 - 🔍 Çoklu kaynaklardan veri toplama ve filtreleme
-- 🌐 Derin İnternet Araması tam 300'e Kadar Web Sitesi Tarama
 
 ### 3. 💾 Dinamik Bellek Yönetimi
 - 🧩 Kullanıcı etkileşimlerini kalıcı olarak saklayan bellek sistemi
@@ -34,6 +34,7 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 ### 6. 🔄 Arka Plan Görevleri
 - 🏋️ Sürekli model eğitimi
 - 🕰️ Periyodik sistem güncellemeleri
+- 🌐 Arka planda web arama ve bilgi toplama
 
 ## 🛠️ Gereksinimler
 - 🐍 Python 3.8+
