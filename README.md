@@ -12,7 +12,6 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 - 🏆 Konuşma kalitesini değerlendiren ve optimize eden gelişmiş ödül hesaplama algoritması
 
 ### 2. 🌐 Gelişmiş Web Arama Entegrasyonu
-- 🕵️ Arka planda sürekli web araması yapabilen akıllı arama motoru
 - 🌍 Otomatik olarak güncel bilgileri toplama yeteneği
 - 🔍 Çoklu kaynaklardan veri toplama ve filtreleme
 
