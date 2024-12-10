@@ -14,6 +14,7 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 ### 2. 🌐 Gelişmiş Web Arama Entegrasyonu
 - 🌍 Otomatik olarak güncel bilgileri toplama yeteneği
 - 🔍 Çoklu kaynaklardan veri toplama ve filtreleme
+- 🌐 Derin İnternet Araması tam 300'e Kadar Web Sitesi Tarama
 
 ### 3. 💾 Dinamik Bellek Yönetimi
 - 🧩 Kullanıcı etkileşimlerini kalıcı olarak saklayan bellek sistemi
