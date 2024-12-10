@@ -158,35 +158,9 @@ class DiscordBot:
             search_interval=300  # 5 minutes between searches
         )
         
-        # Start background web search in a separate thread
-        self.web_search_thread = threading.Thread(
-            target=self._start_web_search, 
-            daemon=True
-        )
-        self.web_search_thread.start()
-
         # Initialize Deep Self-Reward Learning System
         self.deep_self_reward_system = DeepSelfRewardSystem()
         self.deep_self_reward_system.start_background_tasks()
-
-    def _start_web_search(self):
-        """Start background web search in a separate thread"""
-        try:
-            # Periodically perform comprehensive web searches on default topics
-            while True:
-                query = random.choice(self.web_searcher.default_topics)
-                results = self.web_searcher.web_search(query, max_results=300)
-                self.web_searcher.save_search_results(query, results)
-                
-                # Wait for the specified interval before next search
-                time.sleep(self.web_searcher.search_interval)
-        except Exception as e:
-            print(f"Error in background web search: {e}")
-            # Optional: Add logging or retry mechanism
-
-    def start(self):
-        # Move task start to a separate method that can be called after the client is ready
-        self.dynamic_status.start()
 
     def load_memory(self):
         for filename in os.listdir(MEMORY_DIR):
@@ -212,6 +186,10 @@ class DiscordBot:
         ]
         new_status = random.choice(statuses)
         await self.client.change_presence(activity=discord.Game(name=new_status))
+
+    def start(self):
+        # Start dynamic status task using asyncio
+        asyncio.create_task(self.dynamic_status())
 
     async def perform_web_search(self, query):
         """Perform web search and return comprehensive results"""
@@ -241,32 +219,8 @@ class DiscordBot:
 
     async def generate_response(self, user_id, user_message):
         try:
-            # Load user's memory
-            memory = self.user_memory.get(user_id, [])
-            
-            # Kullanıcı sorusuna ilgili araştırmaları bul
-            try:
-                relevant_researches = self.web_searcher.find_relevant_research(user_message)
-                
-                # İlgili araştırmaları context'e ekle
-                if relevant_researches:
-                    research_context = "🔍 İlgili Araştırma Sonuçları:\n\n"
-                    for research in relevant_researches:
-                        research_context += f"Konu: {research['query']}\n"
-                        for result in research['results'][:3]:  # Her araştırmadan ilk 3 sonuç
-                            research_context += (
-                                f"- Başlık: {result.get('title', 'N/A')}\n"
-                                f"  Özet: {result.get('snippet', 'Detay yok')}\n"
-                            )
-                        research_context += "\n"
-                    
-                    # Hafızaya ekle
-                    memory.append({
-                        "role": "system", 
-                        "content": research_context
-                    })
-            except Exception as e:
-                print(f"İlgili araştırma bulunurken hata: {e}")
+            # Load user's memory, creating a copy to prevent modification during iteration
+            memory = self.user_memory.get(user_id, []).copy()
             
             # Perform automatic web search to enhance context
             try:
@@ -300,10 +254,6 @@ class DiscordBot:
             prompt = "You are a sophisticated Protogen chatbot created by Stixyie with unlimited memory and web search capabilities.\n"
             prompt += "You can seamlessly integrate web search results into your responses to provide up-to-date and relevant information.\n"
             
-            # Add background research context to the prompt
-            research_prompt = self.web_searcher.generate_research_prompt(last_n=3)
-            prompt += f"\n{research_prompt}\n"
-            
             # Add memory context to prompt
             for msg in memory[-10:]:  # Limit to last 10 messages to prevent context overflow
                 prompt += f"{msg['role']}: {msg['content']}\n"
@@ -313,6 +263,7 @@ class DiscordBot:
 
             # Add bot's response to memory
             memory.append({"role": "bot", "content": response})
+            # Update the user's memory in the dictionary
             self.user_memory[user_id] = memory
             self.save_memory(user_id)
 
@@ -397,9 +348,8 @@ async def on_message(message):
         # Start typing indicator
         async with message.channel.typing():
             try:
-                # Generate bot's response
-                bot_instance = DiscordBot(client)
-                response = await bot_instance.generate_response(str(message.author.id), message.content)
+                # Generate bot's response using the global bot instance
+                response = await bot.generate_response(str(message.author.id), message.content)
                 
                 # Send the response
                 await message.reply(response)
@@ -421,9 +371,6 @@ async def on_member_join(member):
 
 def main():
     """Entry point for the Discord Bot"""
-    # Arka planda araştirma için web_search modülünü başlat
-    web_searcher = AdvancedWebSearcher()
-    web_searcher.start_background_research(interval=60)  # Her saat başı araştirma yap
     asyncio.run(client.start(DISCORD_TOKEN))
 
 if __name__ == "__main__":

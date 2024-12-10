@@ -7,6 +7,7 @@ import json
 import random
 import uuid
 from groq import Groq
+import duckduckgo_search
 
 # Ortam değişkenlerini yükle
 load_dotenv()
@@ -307,25 +308,22 @@ Hazır mısın, {mesaj.author.name}? 🦊✨🌈"""
 
 @bot.command(name='ara')
 async def web_arama(ctx, *, sorgu):
-    """DNS yedekleriyle web araması yapma"""
+    """DuckDuckGo web araması yapma"""
     try:
-        # DNS sunucuları arasında gezin
-        for dns in DNS_YEDEKLERI:
-            try:
-                arama_url = f"https://duckduckgo.com/html/?q={sorgu}"
-                basliklar = {
-                    'User-Agent': 'Mozilla/5.0',
-                    'DNS': dns  # Simüle edilmiş DNS yönlendirmesi
-                }
-                yanit = requests.get(arama_url, headers=basliklar, timeout=10)
-                
-                if yanit.status_code == 200:
-                    await ctx.send(f"'{sorgu}' için arama sonuçları: {yanit.url}")
-                    return
-            except requests.RequestException:
-                continue
+        # DuckDuckGo arama sonuçlarını al
+        results = duckduckgo_search.ddg(sorgu, max_results=300)
         
-        await ctx.send("Arama başarısız oldu. Lütfen daha sonra tekrar deneyin.")
+        if not results:
+            await ctx.send("Arama sonucu bulunamadı.")
+            return
+        
+        # Sonuçları Discord mesajı olarak formatla
+        cevap = f"'{sorgu}' için arama sonuçları:\n\n"
+        for i, sonuc in enumerate(results, 1):
+            cevap += f"{i}. {sonuc['title']}\n{sonuc['link']}\n\n"
+        
+        # Mesajı Discord'a gönder
+        await ctx.send(cevap)
     
     except Exception as e:
         await ctx.send(f"Arama hatası: {str(e)}")

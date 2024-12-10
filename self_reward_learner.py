@@ -75,8 +75,9 @@ class DeepSelfRewardLearner:
         """Start background thread for continuous learning"""
         def learn_loop():
             while True:
-                # Periodically process and learn from stored conversations
-                for conv_id, conversation in memory_manager.conversations.items():
+                # Create a copy of the conversations to iterate safely
+                conversations_copy = dict(memory_manager.conversations)
+                for conv_id, conversation in conversations_copy.items():
                     self.train_on_conversation(conversation)
                 
                 time.sleep(60)  # Learn every minute

@@ -1,7 +1,7 @@
-import os
 import requests
 import random
 import json
+import os
 import sys
 import time
 import logging
@@ -13,17 +13,13 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import subprocess
 import change_dns
-import threading
-from datetime import datetime, timedelta
 
 class AdvancedWebSearcher:
     def __init__(self, 
                  log_file='advanced_web_search.log', 
                  results_dir='comprehensive_search_results',
                  search_interval=300,
-                 max_queue_size=100,
-                 memory_size=1_000_000,  # 1 milyon konu
-                 memory_retention_days=30):  # 30 gün sonra yenileme
+                 max_queue_size=100):
         """
         Advanced Web Searcher with DuckDuckGo and adaptive DNS management
         """
@@ -50,17 +46,6 @@ class AdvancedWebSearcher:
             "machine learning breakthroughs",
             "renewable energy innovations"
         ]
-        
-        # Araştırma hafızası
-        self.research_memory = []
-        self.memory_size = memory_size
-
-        # Gelişmiş araştırma hafızası
-        self.comprehensive_research_memory = {
-            'topics': {},  # {topic_hash: topic_data}
-            'last_updated': {}  # Son güncellenme zamanları
-        }
-        self.memory_retention_days = memory_retention_days
 
     def setup_logging(self, log_file: str):
         """Configure logging with console output"""
@@ -149,57 +134,16 @@ class AdvancedWebSearcher:
             print(f"❌ DNS Change Error: {e}")
             return False
 
-    def web_search(self, query: str, max_results: int = 300) -> Optional[List[Dict]]:
+    def web_search(self, query: str, max_results: int = 5) -> Optional[List[Dict]]:
         """
-        Perform comprehensive web search across multiple sources
-        
-        :param query: Search query
-        :param max_results: Maximum number of search results to retrieve
-        :return: List of search results
+        Perform web search with DuckDuckGo and adaptive DNS handling
         """
-        print(f"🌐 Initiating Comprehensive Web Search for: {query}")
-        
-        # List to store aggregated results
-        all_results = []
-        
-        # Multiple search strategies
-        search_strategies = [
-            # DuckDuckGo search
-            lambda q, max_r: self.duckduckgo_search(q, max_r // 3),
-            
-            # Additional search methods can be added here
-            # For example, you could integrate other search APIs or web scraping techniques
-        ]
-        
-        # Distribute max results across search strategies
-        results_per_strategy = max_results // len(search_strategies)
-        
-        # Perform searches using different strategies
-        for strategy in search_strategies:
-            try:
-                strategy_results = strategy(query, results_per_strategy)
-                all_results.extend(strategy_results)
-            except Exception as e:
-                print(f"❌ Search strategy failed: {e}")
-        
-        # Deduplicate results based on link
-        unique_results = []
-        seen_links = set()
-        for result in all_results:
-            if result['link'] not in seen_links:
-                unique_results.append(result)
-                seen_links.add(result['link'])
-                
-                # Break if we've reached max results
-                if len(unique_results) >= max_results:
-                    break
-        
-        print(f"✅ Found {len(unique_results)} unique search results")
-        return unique_results
+        print(f"🔍 Initiating Web Search for: {query}")
+        return self.duckduckgo_search(query, max_results)
 
     def save_search_results(self, query: str, results: List[Dict]) -> Optional[str]:
         """
-        Save search results to a timestamped JSON file and update research memory
+        Save search results to a timestamped JSON file
         
         :param query: Original search query
         :param results: Search results to save
@@ -212,339 +156,45 @@ class AdvancedWebSearcher:
                 f"search_results_{timestamp}.json"
             )
             
-            # Araştırma kaydı oluştur
-            research_entry = {
-                'timestamp': timestamp,
-                'query': query,
-                'results_file': filename,
-                'results_count': len(results)
-            }
-            
-            # Hafızaya ekle
-            self.research_memory.append(research_entry)
-            
-            # Hafıza boyutunu kontrol et
-            if len(self.research_memory) > self.memory_size:
-                # En eski araştırmayı sil
-                oldest_research = self.research_memory.pop(0)
-                
-                # İlgili dosyayı da silebilirsiniz (opsiyonel)
-                try:
-                    os.remove(oldest_research['results_file'])
-                except Exception as e:
-                    print(f"❌ Eski araştırmaya ait dosya silinemedi: {e}")
-            
-            # Sonuçları JSON'a kaydet
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump({
                     'query': query,
                     'timestamp': timestamp,
                     'results': results
-                }, f, ensure_ascii=False, indent=2)
+                }, f, ensure_ascii=False, indent=4)
             
+            logging.info(f"Search results saved to {filename}")
             return filename
         
         except Exception as e:
             logging.error(f"Error saving search results: {e}")
             return None
 
-    def get_research_memory(self, last_n=None):
+    @classmethod
+    def run_as_admin(cls):
         """
-        Kayıtlı araştırmaları döndür
-        
-        :param last_n: Son n araştırmayı getir (opsiyonel)
-        :return: Araştırma hafızası listesi
-        """
-        if last_n is not None:
-            return self.research_memory[-last_n:]
-        return self.research_memory
-
-    def search_research_memory(self, keyword):
-        """
-        Hafızadaki araştırmalarda anahtar kelimeye göre arama yap
-        
-        :param keyword: Aranacak anahtar kelime
-        :return: Eşleşen araştırmalar
-        """
-        matched_researches = []
-        for research in self.research_memory:
-            if keyword.lower() in research['query'].lower():
-                # Detaylı sonuçları yükle
-                try:
-                    with open(research['results_file'], 'r', encoding='utf-8') as f:
-                        full_research = json.load(f)
-                        matched_researches.append(full_research)
-                except Exception as e:
-                    print(f"❌ Araştırma dosyası okunamadı: {e}")
-        
-        return matched_researches
-
-    def generate_topic_hash(self, query):
-        """
-        Benzersiz bir konu hash'i oluştur
-        
-        :param query: Araştırma konusu
-        :return: Hash değeri
-        """
-        import hashlib
-        return hashlib.md5(query.lower().encode()).hexdigest()
-
-    def is_topic_expired(self, topic_hash):
-        """
-        Konunun süresinin dolup dolmadığını kontrol et
-        
-        :param topic_hash: Konu hash'i
-        :return: Süre dolmuşsa True, aksi halde False
-        """
-        # datetime ve timedelta zaten import edildi
-        
-        if topic_hash not in self.comprehensive_research_memory['last_updated']:
-            return True
-        
-        last_updated = self.comprehensive_research_memory['last_updated'][topic_hash]
-        expiration_time = last_updated + timedelta(days=self.memory_retention_days)
-        
-        return datetime.now() > expiration_time
-
-    def save_comprehensive_research(self, query, results):
-        """
-        Kapsamlı araştırmaları kaydet
-        
-        :param query: Araştırma konusu
-        :param results: Araştırma sonuçları
-        :return: Kaydedilen dosyanın yolu
+        Attempt to run the script with administrative privileges
         """
         try:
-            # Konu için benzersiz hash oluştur
-            topic_hash = self.generate_topic_hash(query)
-            
-            # Mevcut hafızadaki konu sayısını kontrol et
-            if len(self.comprehensive_research_memory['topics']) >= self.memory_size:
-                # En eski konuyu sil
-                oldest_topic = min(
-                    self.comprehensive_research_memory['last_updated'], 
-                    key=self.comprehensive_research_memory['last_updated'].get
-                )
-                del self.comprehensive_research_memory['topics'][oldest_topic]
-                del self.comprehensive_research_memory['last_updated'][oldest_topic]
-            
-            # Araştırma sonuçlarını kaydet
-            timestamp = int(time.time())
-            filename = os.path.join(
-                self.results_dir, 
-                f"comprehensive_research_{topic_hash}_{timestamp}.json"
-            )
-            
-            research_entry = {
-                'query': query,
-                'timestamp': timestamp,
-                'results': results
-            }
-            
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(research_entry, f, ensure_ascii=False, indent=2)
-            
-            # Hafızaya ekle
-            self.comprehensive_research_memory['topics'][topic_hash] = filename
-            self.comprehensive_research_memory['last_updated'][topic_hash] = datetime.now()
-            
-            return filename
-        
+            if sys.platform.startswith('win'):
+                # Windows-specific admin elevation
+                import ctypes
+                if ctypes.windll.shell32.IsUserAnAdmin():
+                    return True
+                else:
+                    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+                    sys.exit(0)
+            elif sys.platform.startswith('linux'):
+                # Linux sudo method
+                subprocess.run(['sudo', sys.executable] + sys.argv)
+                sys.exit(0)
+            elif sys.platform.startswith('darwin'):
+                # macOS sudo method
+                subprocess.run(['sudo', sys.executable] + sys.argv)
+                sys.exit(0)
         except Exception as e:
-            logging.error(f"Kapsamlı araştırmakaydedilemedi: {e}")
-            return None
-
-    def find_relevant_research(self, user_query, max_results=10):
-        """
-        Kullanıcı sorusuna en ilgili araştırmaları bul
-        
-        :param user_query: Kullanıcı sorusu
-        :param max_results: Maksimum sonuç sayısı
-        :return: İlgili araştırmasonuçları
-        """
-        relevant_researches = []
-        
-        # Tüm konuları kontrol et
-        for topic_hash, filename in self.comprehensive_research_memory['topics'].items():
-            # Süre dolmuş mu kontrol et
-            if self.is_topic_expired(topic_hash):
-                # Süre dolmuş konuyu sil
-                del self.comprehensive_research_memory['topics'][topic_hash]
-                del self.comprehensive_research_memory['last_updated'][topic_hash]
-                continue
-            
-            try:
-                # Araştırma dosyasını yükle
-                with open(filename, 'r', encoding='utf-8') as f:
-                    research = json.load(f)
-                
-                # Kullanıcı sorusuyla ilgili mi kontrol et
-                similarity_score = self.calculate_query_similarity(user_query, research['query'])
-                
-                if similarity_score > 0.5:  # Benzerlik eşiği
-                    relevant_researches.append({
-                        'query': research['query'],
-                        'results': research['results'],
-                        'similarity_score': similarity_score
-                    })
-            
-            except Exception as e:
-                print(f"Araştırma yüklenirken hata: {e}")
-        
-        # Benzerlik puanına göre sırala
-        relevant_researches.sort(key=lambda x: x['similarity_score'], reverse=True)
-        
-        return relevant_researches[:max_results]
-
-    def calculate_query_similarity(self, query1, query2):
-        """
-        İki sorgu arasındaki benzerliği hesapla
-        
-        :param query1: İlk sorgu
-        :param query2: İkinci sorgu
-        :return: Benzerlik skoru (0-1 arası)
-        """
-        import difflib
-        
-        # Kelimeleri küçük harfe çevir ve ayır
-        words1 = set(query1.lower().split())
-        words2 = set(query2.lower().split())
-        
-        # Ortak kelimelerin oranını hesapla
-        common_words = words1.intersection(words2)
-        similarity = len(common_words) / max(len(words1), len(words2))
-        
-        return similarity
-
-    def background_research_loop(self, interval=3600):
-        """
-        Arka planda sürekli araştırmayap
-        
-        :param interval: Araştırmalar arası süre (saniye)
-        """
-        while True:
-            try:
-                # Güncel ve çeşitli konularda araştırmayap
-                topics = [
-                    "Yapay Zeka Teknolojileri",
-                    "Küresel Teknoloji Trendleri",
-                    "Bilişim Güvenliği Güncel Gelişmeleri",
-                    "Makine Öğrenmesi Son Yenilikler",
-                    "Sürdürülebilir Teknoloji",
-                    "Dijital Dönüşüm",
-                    "Kripto Para ve Blockchain",
-                    "Biyoteknoloji Araştırmaları",
-                    "Uzay Teknolojileri",
-                    "Çevre ve Yeşil Teknolojiler"
-                ]
-                
-                # Rastgele bir konu seç
-                topic = random.choice(topics)
-                
-                print(f"🔬 Arka Plan Araştırması Başlatılıyor: {topic}")
-                
-                # Kapsamlı web araması yap
-                results = self.web_search(topic, max_results=50)
-                
-                # Araştırma sonuçlarını kaydet
-                if results:
-                    saved_file = self.save_comprehensive_research(topic, results)
-                    print(f"💾 Araştırma Sonuçları Kaydedildi: {saved_file}")
-                
-                # Belirli aralıklarla araştırma yap
-                time.sleep(interval)
-            
-            except Exception as e:
-                print(f"❌ Arka plan araştırmaları hatası: {e}")
-                time.sleep(interval)
-
-    def start_background_research(self, interval=3600):
-        """
-        Arka plan araştırmaları thread'ini başlat
-        
-        :param interval: Araştırmalar arası süre (saniye)
-        """
-        import threading
-        
-        research_thread = threading.Thread(
-            target=self.background_research_loop, 
-            args=(interval,), 
-            daemon=True
-        )
-        research_thread.start()
-        print("🌐 Arka Plan Araştırma Thread'i Başlatıldı")
-
-    def generate_research_prompt(self, last_n=5):
-        """
-        Araştırma hafızasından prompt oluştur
-        
-        :param last_n: Son n araştırmayı prompt'a ekle
-        :return: Araştırma bilgilerini içeren prompt metni
-        """
-        research_prompt = "🌐 BACKGROUND RESEARCH MEMORY:\n\n"
-        
-        # Son n araştırmayı al
-        recent_researches = self.get_research_memory(last_n=last_n)
-        
-        if not recent_researches:
-            return "No recent research found."
-        
-        for idx, research in enumerate(recent_researches, 1):
-            try:
-                # Tam araştırmayı yükle
-                with open(research['results_file'], 'r', encoding='utf-8') as f:
-                    full_research = json.load(f)
-                
-                research_prompt += f"Research {idx}:\n"
-                research_prompt += f"- Topic: {full_research['query']}\n"
-                research_prompt += f"- Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(research['timestamp']))}\n"
-                research_prompt += f"- Results Count: {len(full_research['results'])}\n"
-                
-                # İlk 3 sonucu özet olarak ekle
-                research_prompt += "- Top Insights:\n"
-                for result in full_research['results'][:3]:
-                    research_prompt += f"  * {result['title']}: {result['snippet'][:100]}...\n"
-                
-                research_prompt += "\n"
-            
-            except Exception as e:
-                print(f"❌ Araştırma detayları yüklenemedi: {e}")
-        
-        return research_prompt
-
-    def get_research_context(self, last_n=5):
-        """
-        Araştırma hafızasını bir sözlük olarak döndür
-        
-        :param last_n: Son n araştırmayı context'e ekle
-        :return: Araştırma bilgilerini içeren sözlük
-        """
-        research_context = {
-            'research_memory': []
-        }
-        
-        # Son n araştırmayı al
-        recent_researches = self.get_research_memory(last_n=last_n)
-        
-        for research in recent_researches:
-            try:
-                # Tam araştırmayı yükle
-                with open(research['results_file'], 'r', encoding='utf-8') as f:
-                    full_research = json.load(f)
-                
-                research_entry = {
-                    'query': full_research['query'],
-                    'timestamp': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(research['timestamp'])),
-                    'results_count': len(full_research['results']),
-                    'top_results': full_research['results'][:3]
-                }
-                
-                research_context['research_memory'].append(research_entry)
-            
-            except Exception as e:
-                print(f"❌ Araştırma detayları yüklenemedi: {e}")
-        
-        return research_context
+            logging.error(f"Could not elevate privileges: {e}")
+            return False
 
 def main():
     """Test the web search functionality"""
@@ -561,6 +211,9 @@ def main():
 
     # Initialize advanced web searcher
     searcher = AdvancedWebSearcher()
+    
+    # Ensure admin privileges
+    # searcher.run_as_admin()
     
     # Continuous search loop
     while True:
