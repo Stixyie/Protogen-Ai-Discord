@@ -348,7 +348,7 @@ Unutma: Amacın kullanıcıya en iyi şekilde yardımcı olmak ve anlamlı bir i
                         },
                         {"role": "user", "content": prompt}
                     ],
-                    "max_tokens": 300,  # Limit token count
+                    "max_tokens": 32768,  # Limit token count
                     "temperature": 0.7,  # Balanced creativity
                     "top_p": 0.9  # Focused response
                 }
@@ -383,6 +383,37 @@ Unutma: Amacın kullanıcıya en iyi şekilde yardımcı olmak ve anlamlı bir i
             print(f"Unexpected error in Groq API call: {e}")
             return "Oops! Something went wrong while processing your request."
 
+    async def send_long_message(self, channel, message):
+        """
+        Send a long message by splitting it into chunks of 2000 characters or less.
+        
+        Args:
+            channel (discord.TextChannel): The channel to send the message to
+            message (str): The full message to send
+        """
+        # Split the message into chunks of 2000 characters or less
+        while message:
+            # Find the last space within 2000 characters to avoid cutting words
+            if len(message) <= 2000:
+                chunk = message
+                message = ""
+            else:
+                # Try to split at a space near 2000 characters
+                chunk = message[:2000]
+                last_space = chunk.rfind(' ')
+                
+                # If a space is found, use it to split
+                if last_space != -1:
+                    chunk = chunk[:last_space]
+                    message = message[last_space:].lstrip()
+                else:
+                    # If no space found, just cut at 2000
+                    chunk = message[:2000]
+                    message = message[2000:]
+            
+            # Send the chunk
+            await channel.send(chunk)
+
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
@@ -406,7 +437,7 @@ async def on_message(message):
                     response = await bot.generate_response(str(message.author.id), message.content)
                     
                     # Send the response
-                    await message.channel.send(response)
+                    await bot.send_long_message(message.channel, response)
                     break
             except Exception as e:
                 await message.channel.send(f"An error occurred: {str(e)}")

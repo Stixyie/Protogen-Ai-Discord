@@ -9,6 +9,12 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from groq import Groq
 from dotenv import load_dotenv
+import glob
+import colorama
+from colorama import Fore, Style
+
+# Initialize colorama for colored console output
+colorama.init(autoreset=True)
 
 class MemoryChunk:
     def __init__(self, content: str, timestamp: float = None, category: str = 'default'):
@@ -294,15 +300,43 @@ class UserMemoryManager:
     def start_memory_watcher(self):
         """Start watching the memory directory for new or modified files"""
         class MemoryFileHandler(FileSystemEventHandler):
+            def __init__(self, memory_manager):
+                self.memory_manager = memory_manager
+
             def on_created(self, event):
-                if not event.is_directory:
+                if not event.is_directory and event.src_path.endswith('.json'):
+                    print(f"{Fore.GREEN}📄 New memory file detected: {event.src_path}{Style.RESET_ALL}")
                     self.process_memory_file(event.src_path)
-            
+
             def on_modified(self, event):
-                if not event.is_directory:
+                if not event.is_directory and event.src_path.endswith('.json'):
+                    print(f"{Fore.CYAN}🔄 Memory file modified: {event.src_path}{Style.RESET_ALL}")
                     self.process_memory_file(event.src_path)
+
+            def process_memory_file(self, file_path):
+                """
+                Process a single memory file when created or modified
+                
+                Args:
+                    file_path (str): Path to the memory JSON file
+                """
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        memories = json.load(f)
+                    
+                    # Asynchronously send memories to Groq
+                    asyncio.create_task(self.memory_manager.send_memories_to_groq(memories))
+                    
+                    print(f"{Fore.GREEN}✓ Processed memory file: {os.path.basename(file_path)}{Style.RESET_ALL}")
+                except Exception as e:
+                    print(f"{Fore.RED}✗ Error processing memory file {file_path}: {e}{Style.RESET_ALL}")
+                    logging.error(f"Memory file processing error: {e}")
+
+            def on_deleted(self, event):
+                if not event.is_directory and event.src_path.endswith('.json'):
+                    print(f"{Fore.YELLOW}🗑️ Memory file deleted: {event.src_path}{Style.RESET_ALL}")
         
-        event_handler = MemoryFileHandler()
+        event_handler = MemoryFileHandler(self)
         self.observer.schedule(event_handler, self.memory_dir, recursive=False)
         self.observer.start()
     
@@ -311,9 +345,86 @@ class UserMemoryManager:
         self.observer.stop()
         self.observer.join()
 
+    def read_memory_files(self) -> List[Dict[str, Any]]:
+        """
+        Read all JSON memory files from the memory directory.
+        
+        Returns:
+            List of memory contents from all JSON files
+        """
+        memory_files = glob.glob(os.path.join(self.memory_dir, '*.json'))
+        all_memories = []
+        
+        print(f"{Fore.CYAN}🔍 Scanning memory files...{Style.RESET_ALL}")
+        
+        for file_path in memory_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_memories = json.load(f)
+                    all_memories.extend(file_memories)
+                
+                print(f"{Fore.GREEN}✓ Processed memory file: {os.path.basename(file_path)}{Style.RESET_ALL}")
+            except Exception as e:
+                print(f"{Fore.RED}✗ Error processing {file_path}: {e}{Style.RESET_ALL}")
+        
+        return all_memories
+    
+    async def send_memories_to_groq(self, memories: List[Dict[str, Any]]):
+        """
+        Send processed memories to Groq API.
+        
+        Args:
+            memories: List of memory dictionaries
+        """
+        if not self.groq_client:
+            print(f"{Fore.RED}✗ Groq client not initialized. Cannot send memories.{Style.RESET_ALL}")
+            return
+        
+        try:
+            # Prepare memory context for Groq
+            memory_context = "\n".join([
+                f"[{mem.get('role', 'unknown')}]: {mem.get('content', '')}" 
+                for mem in memories
+            ])
+            
+            # Truncate memory context if too long
+            max_context_length = 4000  # Adjust based on Groq's token limits
+            memory_context = memory_context[-max_context_length:]
+            
+            print(f"{Fore.CYAN}📤 Sending memory context to Groq API...{Style.RESET_ALL}")
+            
+            # Optional: You might want to create a specific system prompt for memory processing
+            system_prompt = "You are a memory processing assistant. Analyze and contextualize the following conversation history."
+            
+            chat_completion = self.groq_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Process and summarize this conversation history:\n{memory_context}"}
+                ],
+                model="llama3-8b-8192"  # Adjust model as needed
+            )
+            
+            response = chat_completion.choices[0].message.content
+            
+            print(f"{Fore.GREEN}✓ Memory processed successfully{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}📝 Groq Response Summary:\n{response}{Style.RESET_ALL}")
+            
+            return response
+        
+        except Exception as e:
+            print(f"{Fore.RED}✗ Error sending memories to Groq: {e}{Style.RESET_ALL}")
+            logging.error(f"Groq API Error: {e}")
+            return None
+
 async def main():
     memory_manager = UserMemoryManager()
     memory_manager.start_memory_watcher()
+    
+    # Read memory files
+    memories = memory_manager.read_memory_files()
+    
+    # Send memories to Groq
+    await memory_manager.send_memories_to_groq(memories)
     
     try:
         # Keep the script running
