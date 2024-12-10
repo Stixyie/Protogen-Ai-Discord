@@ -34,7 +34,6 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 ### 6. 🔄 Arka Plan Görevleri
 - 🏋️ Sürekli model eğitimi
 - 🕰️ Periyodik sistem güncellemeleri
-- 🌐 Arka planda web arama ve bilgi toplama
 
 ## 🛠️ Gereksinimler
 - 🐍 Python 3.8+
@@ -91,7 +90,7 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-- 🚀 v1: İlk Çıkış Sürümü 10.12.2024 tarihindeki
+- 🚀 v1.6: Hata Düzeltmeleri Ve Özelik İyileştirmeleri 10.12.2024 tarihindeki
 - 🔧 Sürekli geliştirme ve iyileştirmeler
 
 ## 🚨 Güvenlik Uyarıları
