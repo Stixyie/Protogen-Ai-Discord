@@ -1,3 +1,12 @@
+import logging
+import warnings
+
+# Suppress specific warnings
+logging.getLogger('scapy.runtime').setLevel(logging.ERROR)
+logging.getLogger('asyncio').setLevel(logging.ERROR)
+warnings.filterwarnings('ignore', category=RuntimeWarning)
+warnings.filterwarnings('ignore', message='Cannot modify interface*')
+
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
 import sys
@@ -386,21 +395,23 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Check if bot is mentioned or in a direct message
+    # Check if the bot is mentioned or in a DM
     if client.user.mentioned_in(message) or isinstance(message.channel, discord.DMChannel):
         # Start typing indicator
         async with message.channel.typing():
             try:
-                # Generate bot's response using the global bot instance
-                response = await bot.generate_response(str(message.author.id), message.content)
-                
-                # Send the response
-                await message.reply(response)
-            
-            except BaseException as e:
-                # Error handling
-                print(f"Error in on_message: {e}")
-                await message.reply("Oops! Something went wrong while processing your message. 🤖❌")
+                # Keep typing while processing the message
+                while True:
+                    # Generate response
+                    response = await bot.generate_response(str(message.author.id), message.content)
+                    
+                    # Send the response
+                    await message.channel.send(response)
+                    break
+            except Exception as e:
+                await message.channel.send(f"An error occurred: {str(e)}")
+    
+    # Optional: handle other message types or commands here
 
 @client.event
 async def on_message_edit(before, after):
