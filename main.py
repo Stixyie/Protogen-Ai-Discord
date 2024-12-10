@@ -172,15 +172,11 @@ class DiscordBot:
         self.deep_self_reward_system.start_background_tasks()
 
     def load_memory(self):
-        for filename in os.listdir(MEMORY_DIR):
-            if filename.endswith(".json"):
-                user_id = filename[:-5]
-                with open(os.path.join(MEMORY_DIR, filename), "r", encoding="utf-8") as f:
-                    self.user_memory[user_id] = json.load(f)
+        for user_id in memory_manager.get_user_ids():
+            self.user_memory[user_id] = memory_manager.load_user_memory(user_id)
 
     def save_memory(self, user_id):
-        with open(os.path.join(MEMORY_DIR, f"{user_id}.json"), "w", encoding="utf-8") as f:
-            json.dump(self.user_memory[user_id], f, ensure_ascii=False, indent=4)
+        memory_manager.save_user_memory(user_id, self.user_memory[user_id])
 
     @tasks.loop(minutes=1)
     async def dynamic_status(self):

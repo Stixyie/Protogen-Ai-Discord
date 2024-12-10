@@ -47,7 +47,9 @@ def json_numpy_serializer(obj):
 class PersistentMemoryManager:
     def __init__(self, storage_path='memory_storage'):
         self.storage_path = storage_path
-        os.makedirs(storage_path, exist_ok=True)
+        
+        # Ensure memory directories exist
+        self.ensure_memory_directories()
         
         # Groq API Client with secure key retrieval
         try:
@@ -65,7 +67,8 @@ class PersistentMemoryManager:
         self.learning_history = {}
         self.system_state = {}
         
-        # Persistent storage files
+        # Persistent storage files and directories
+        self.memory_dir = os.path.join(os.getcwd(), 'memory')
         self.conversations_file = os.path.join(storage_path, 'conversations.pkl')
         self.rewards_file = os.path.join(storage_path, 'rewards.pkl')
         self.learning_history_file = os.path.join(storage_path, 'learning_history.pkl')
@@ -76,6 +79,89 @@ class PersistentMemoryManager:
         
         logger.info("Memory Manager initialized successfully")
     
+    def ensure_memory_directories(self):
+        """
+        Ensure all necessary memory directories exist
+        """
+        directories = [
+            'memory',  # Main memory directory
+            'memory_storage',  # Persistent storage directory
+            'logs'  # Logging directory
+        ]
+        
+        for directory in directories:
+            try:
+                os.makedirs(directory, exist_ok=True)
+                logger.info(f"Ensured directory exists: {directory}")
+            except Exception as e:
+                logger.error(f"Error creating directory {directory}: {e}")
+    
+    def create_user_memory_file(self, user_id):
+        """
+        Create a memory file for a specific user
+        
+        :param user_id: User's unique identifier
+        :return: Path to the created memory file
+        """
+        try:
+            # Ensure memory directory exists
+            os.makedirs(self.memory_dir, exist_ok=True)
+            
+            # Create user memory file path
+            user_memory_file = os.path.join(self.memory_dir, f"{user_id}.json")
+            
+            # Create the file if it doesn't exist
+            if not os.path.exists(user_memory_file):
+                with open(user_memory_file, 'w', encoding='utf-8') as f:
+                    json.dump({}, f)
+                logger.info(f"Created memory file for user {user_id}")
+            
+            return user_memory_file
+        except Exception as e:
+            logger.error(f"Error creating memory file for user {user_id}: {e}")
+            return None
+    
+    def save_user_memory(self, user_id, memory_data):
+        """
+        Save memory data for a specific user
+        
+        :param user_id: User's unique identifier
+        :param memory_data: Memory data to save
+        """
+        try:
+            # Create user memory file if it doesn't exist
+            user_memory_file = self.create_user_memory_file(user_id)
+            
+            if user_memory_file:
+                with open(user_memory_file, 'w', encoding='utf-8') as f:
+                    json.dump(memory_data, f, indent=2, default=json_numpy_serializer)
+                logger.info(f"Saved memory for user {user_id}")
+        except Exception as e:
+            logger.error(f"Error saving memory for user {user_id}: {e}")
+    
+    def load_user_memory(self, user_id):
+        """
+        Load memory data for a specific user
+        
+        :param user_id: User's unique identifier
+        :return: Loaded memory data
+        """
+        try:
+            user_memory_file = os.path.join(self.memory_dir, f"{user_id}.json")
+            
+            # Create file if it doesn't exist
+            if not os.path.exists(user_memory_file):
+                self.create_user_memory_file(user_id)
+                return {}
+            
+            with open(user_memory_file, 'r', encoding='utf-8') as f:
+                memory_data = json.load(f)
+                logger.info(f"Loaded memory for user {user_id}")
+                return memory_data
+        except Exception as e:
+            logger.error(f"Error loading memory for user {user_id}: {e}")
+            return {}
+
     def truncate_memory_context(self, memory_context, max_tokens=3000):
         """
         Truncate memory context to fit within token limits
@@ -293,6 +379,30 @@ class PersistentMemoryManager:
         
         backup_thread = threading.Thread(target=backup, daemon=True)
         backup_thread.start()
+
+    def get_user_ids(self):
+        """
+        Retrieve all user IDs from memory files
+        
+        :return: List of user IDs
+        """
+        try:
+            # Ensure memory directory exists
+            os.makedirs(self.memory_dir, exist_ok=True)
+            
+            # Get all JSON files in the memory directory
+            user_ids = []
+            for filename in os.listdir(self.memory_dir):
+                if filename.endswith('.json'):
+                    # Remove .json extension to get user ID
+                    user_id = filename[:-5]
+                    user_ids.append(user_id)
+            
+            logger.info(f"Retrieved {len(user_ids)} user IDs")
+            return user_ids
+        except Exception as e:
+            logger.error(f"Error retrieving user IDs: {e}")
+            return []
 
 # Instantiate memory manager
 memory_manager = PersistentMemoryManager()
