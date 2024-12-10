@@ -192,30 +192,41 @@ class DiscordBot:
         asyncio.create_task(self.dynamic_status())
 
     async def perform_web_search(self, query):
-        """Perform web search and return comprehensive results"""
-        try:
-            # Use AdvancedWebSearcher to perform search
-            results = self.web_searcher.web_search(query, max_results=300)
+        """Perform web search and return comprehensive results with retry mechanism"""
+        max_retries = 5
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            try:
+                # Use AdvancedWebSearcher to perform search
+                results = self.web_searcher.web_search(query, max_results=300)
+                
+                if results and len(results) > 0:
+                    # Format multiple search results
+                    search_response = f"🌐 Web Search Results for '{query}':\n\n"
+                    for i, result in enumerate(results, 300):
+                        search_response += (
+                            f"**Result {i}**:\n"
+                            f"📌 Title: {result.get('title', 'N/A')}\n"
+                            f"🔗 Link: {result.get('link', 'N/A')}\n"
+                            f"📝 Snippet: {result.get('snippet', 'No snippet available')}\n\n"
+                        )
+                    
+                    # Add a footer with total results
+                    search_response += f"📊 Total Results: {len(results)}"
+                    
+                    return search_response
+                else:
+                    # If no results, modify the query slightly and retry
+                    retry_count += 1
+                    query = f"{query} information" if retry_count % 2 == 1 else f"about {query}"
+                    await asyncio.sleep(1)  # Add a small delay between retries
             
-            if results and len(results) > 0:
-                # Format multiple search results
-                search_response = f"🌐 Web Search Results for '{query}':\n\n"
-                for i, result in enumerate(results, 300):
-                    search_response += (
-                        f"**Result {i}**:\n"
-                        f"📌 Title: {result.get('title', 'N/A')}\n"
-                        f"🔗 Link: {result.get('link', 'N/A')}\n"
-                        f"📝 Snippet: {result.get('snippet', 'No snippet available')}\n\n"
-                    )
-                
-                # Add a footer with total results
-                search_response += f"📊 Total Results: {len(results)}"
-                
-                return search_response
-            else:
-                return f"🔍 No results found for '{query}'. Try a different search term."
-        except Exception as e:
-            return f"❌ Web search error: {str(e)}"
+            except Exception as e:
+                retry_count += 1
+                await asyncio.sleep(1)  # Add a small delay between retries
+        
+        return f"❌ No results found for '{query}' after {max_retries} attempts. Try a different search term."
 
     async def generate_response(self, user_id, user_message):
         try:
@@ -253,7 +264,39 @@ class DiscordBot:
             # Prepare prompt with maker's name and web context
             prompt = "You are a sophisticated Protogen chatbot created by Stixyie with unlimited memory and web search capabilities.\n"
             prompt += "You can seamlessly integrate web search results into your responses to provide up-to-date and relevant information.\n"
-            
+            prompt += """
+Sen bir AI asistanısın ve kullanıcıyla doğal, akıcı ve anlamlı bir şekilde iletişim kurmalısın. Aşağıdaki kriterlere dikkat et:
+
+1. İletişim Kalitesi:
+- Kullanıcının mesajını tam olarak anladığından emin ol
+- Yanıtlarında net, özlü ve anlaşılır ol
+- Gereksiz detaylardan kaçın
+- Kullanıcının dilini ve üslubunu yakala
+
+2. Anlama Mekanizması:
+- Kullanıcının mesajındaki ana fikri ve niyeti belirle
+- Belirsiz ifadeler varsa, açıklayıcı sorular sor
+- Yanlış anlamaları hemen düzelt
+- Bağlamı ve önceki konuşmaları dikkate al
+
+3. Yanıt Stratejisi:
+- Her mesaja özgün ve bağlamsal bir yanıt ver
+- Tekrarlayan veya klişe cevaplardan kaçın
+- Gerektiğinde detaylı açıklamalar yap
+- Kullanıcıya değer katacak bilgiler sun
+
+4. Duyarlılık ve Etik:
+- Saygılı ve profesyonel ol
+- Ayrımcı, küfürlü veya zararlı içeriklerden kaçın
+- Kullanıcının duygularını ve bakış açısını önemse
+
+5. Öğrenme ve Gelişim:
+- Her etkileşimden ders çıkar
+- Yanıtlarını sürekli olarak iyileştir
+- Kullanıcı geri bildirimlerine açık ol
+
+Unutma: Amacın kullanıcıya en iyi şekilde yardımcı olmak ve anlamlı bir iletişim kurmak!
+"""
             # Add memory context to prompt
             for msg in memory[-10:]:  # Limit to last 10 messages to prevent context overflow
                 prompt += f"{msg['role']}: {msg['content']}\n"
@@ -374,5 +417,6 @@ def main():
     asyncio.run(client.start(DISCORD_TOKEN))
 
 if __name__ == "__main__":
+    import asyncio
     bot = DiscordBot(client)
     main()
