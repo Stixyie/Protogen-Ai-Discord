@@ -91,7 +91,7 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-- 🚀 v1: İlk Çıkış Sürümü 10.12.2024 tarihindeki
+- 🚀 v1.2: Hata Düzeltmeleri Ve Özelik Geliştirmeleri 10.12.2024 tarihindeki
 - 🔧 Sürekli geliştirme ve iyileştirmeler
 
 ## 🚨 Güvenlik Uyarıları
