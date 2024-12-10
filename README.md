@@ -34,7 +34,6 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 ### 6. 🔄 Arka Plan Görevleri
 - 🏋️ Sürekli model eğitimi
 - 🕰️ Periyodik sistem güncellemeleri
-- 🌐 Arka planda web arama ve bilgi toplama
 
 ## 🛠️ Gereksinimler
 - 🐍 Python 3.8+
