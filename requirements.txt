@@ -1,0 +1,22 @@
+# Temel Bağımlılıklar
+discord.py==2.3.2
+python-dotenv==1.0.0
+aiohttp==3.9.3
+groq==0.3.0
+requests==2.31.0
+beautifulsoup4==4.12.3
+urllib3==2.2.1
+typing==3.7.4.3
+duckduckgo-search==4.1.0
+dnspython==2.6.1
+requests[socks]==2.31.0
+
+# Yapay Zeka ve Makine Öğrenmesi Bağımlılıkları
+tensorflow==2.15.0
+numpy==1.26.3
+scikit-learn==1.3.2
+torch==2.1.2
+
+# Günlükleme ve Hata Yönetimi
+logging
+rich==10.16.2
