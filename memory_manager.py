@@ -230,7 +230,7 @@ class PersistentMemoryManager:
             
             # Send to Groq API
             response = self.groq_client.chat.completions.create(
-                model="llama3-8b-8192",  # You can change the model as needed
+                model="Llama-3.3-70B-Versatile",  # Exclusively using Llama-3.3-70B-Versatile
                 messages=[
                     {
                         "role": "system", 

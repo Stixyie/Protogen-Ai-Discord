@@ -166,7 +166,7 @@ class GroqMemoryIntegrator:
             
             response = self.client.chat.completions.create(
                 messages=[{"role": "system", "content": context_analysis_prompt}],
-                model="llama2-70b-4096"
+                model="llama-3.3-70b-versatile"
             )
             
             analysis = response.choices[0].message.content

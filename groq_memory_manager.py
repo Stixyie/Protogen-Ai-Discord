@@ -26,7 +26,7 @@ class MemoryChunk:
         self.metadata = {}  # Flexible metadata storage
 
 class UserMemoryManager:
-    def __init__(self, memory_dir: str = 'memory', storage_dir: str = 'memory_storage', max_total_memory_mb: float = 50.0):
+    def __init__(self, memory_dir: str = 'memory', storage_dir: str = 'memory_storage', max_total_memory_mb: float = 10000.0):
         load_dotenv()
         
         # Setup logging
@@ -401,7 +401,7 @@ class UserMemoryManager:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Process and summarize this conversation history:\n{memory_context}"}
                 ],
-                model="llama3-8b-8192"  # Adjust model as needed
+                model="llama-3.3-70b-versatile"  # Adjust model as needed
             )
             
             response = chat_completion.choices[0].message.content

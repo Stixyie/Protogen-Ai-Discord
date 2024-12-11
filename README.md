@@ -17,11 +17,18 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 - 🔍 Çoklu kaynaklardan veri toplama ve filtreleme
 
 ### 3. 💾 Gelişmiş Bellek Yönetimi
-- 🧩 Kullanıcı bazında dinamik ve sınırsız hafıza depolama
+- 🧩 Kullanıcı bazında dinamik ve genişletilebilir hafıza depolama
 - 📁 Her kullanıcı için ayrı JSON hafıza dizinleri
-- 🕰️ Otomatik hafıza temizleme ve yönetme
+- 🕰️ Otomatik hafıza temizleme ve yönetme mekanizması
 - 🧠 Groq AI ile otomatik sohbet bağlamı analizi
 - 📊 Detaylı konuşma geçmişi ve eğilim çıkarma
+
+#### Hafıza Yönetimi Özellikleri
+- **Hafıza Limiti**: Varsayılan olarak 10000 MB (10 GB) kadar hafıza depolayabilme
+- **Dinamik Bellek Bölümleme**: İçerik 4000 karakterlik parçalara ayrılır
+- **Otomatik Temizleme**: En eski hafıza parçaları otomatik olarak silinir
+- **Kategori Desteği**: Hafızalar farklı kategorilerde depolanabilir
+- **Performans İzleme**: Her hafıza parçası için benzersiz ID ve zaman damgası
 
 ### 4. 💬 Discord Entegrasyonu
 - 🤝 Tam Discord API entegrasyonu
@@ -92,7 +99,7 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-- 🚀 v1.8: Hata Düzeltmeleri Ve Özelik İyileştirmeleri 11.12.2024 tarihindeki
+- 🚀 v1.9: Hata Düzeltmeleri Ve Özelik İyileştirmeleri 11.12.2024 tarihindeki
 - 🔧 Sürekli geliştirme ve iyileştirmeler
 
 ## 🚨 Güvenlik Uyarıları
