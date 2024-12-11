@@ -29,6 +29,11 @@ from web_search import AdvancedWebSearcher
 # Import custom modules
 from memory_manager import memory_manager
 from self_reward_learner import self_reward_learner
+from chain_of_thoughts import ChainOfThoughtsSystem
+
+# Add necessary imports for Chain of Thoughts
+import logging
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -167,6 +172,12 @@ class DiscordBot:
             search_interval=300  # 5 minutes between searches
         )
         
+        # Initialize Chain of Thoughts System with AI caller
+        self.chain_of_thoughts = ChainOfThoughtsSystem(
+            max_reasoning_steps=10, 
+            ai_caller=self.call_groq_ai  # Pass the AI caller method
+        )
+        
         # Initialize Deep Self-Reward Learning System
         self.deep_self_reward_system = DeepSelfRewardSystem()
         self.deep_self_reward_system.start_background_tasks()
@@ -238,6 +249,9 @@ class DiscordBot:
             # Load user's memory, creating a copy to prevent modification during iteration
             memory = self.user_memory.get(user_id, []).copy()
             
+            # Use Chain of Thoughts for advanced reasoning
+            cot_result = await self.chain_of_thoughts.generate_chain_of_thoughts(user_message)
+            
             # Perform automatic web search to enhance context
             try:
                 # Attempt to get web search results
@@ -262,6 +276,12 @@ class DiscordBot:
             except Exception as e:
                 # Log web search error but continue with response generation
                 print(f"Web arama hatası: {e}")
+            
+            # Add Chain of Thoughts reasoning to memory
+            memory.append({
+                "role": "system",
+                "content": f"🤔 Düşünce Zinciri Sonucu:\n{cot_result['final_conclusion']}"
+            })
             
             # Add user message to memory
             memory.append({"role": "user", "content": user_message})
@@ -302,11 +322,16 @@ Sen bir AI asistanısın ve kullanıcıyla doğal, akıcı ve anlamlı bir şeki
 
 Unutma: Amacın kullanıcıya en iyi şekilde yardımcı olmak ve anlamlı bir iletişim kurmak!
 """
+
+            # Prepare prompt with maker's name and reasoning context
+            prompt = "You are a sophisticated Protogen chatbot created by Stixyie with Chain of Thoughts reasoning capabilities.\n"
+            prompt += "Integrate the Chain of Thoughts reasoning and web search results naturally into your response.\n"
+            
             # Add memory context to prompt
             for msg in memory[-10:]:  # Limit to last 10 messages to prevent context overflow
                 prompt += f"{msg['role']}: {msg['content']}\n"
 
-            # Integrate with Groq API and Llama-3.3-70b-Versatile
+            # Integrate with Groq AI and Llama-3.3-70b-Versatile
             response = await self.call_groq_ai(prompt)
 
             # Add bot's response to memory
@@ -317,6 +342,9 @@ Unutma: Amacın kullanıcıya en iyi şekilde yardımcı olmak ve anlamlı bir i
 
             # Process interaction with Deep Self-Reward Learning System
             self.deep_self_reward_system.process_interaction(user_message, response)
+
+            # Optional: Save reasoning trace
+            self.chain_of_thoughts.save_reasoning_trace(f'reasoning_trace_{user_id}.json')
 
             return response
         except BaseException as e:
