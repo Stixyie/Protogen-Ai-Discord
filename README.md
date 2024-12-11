@@ -71,8 +71,8 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 - **Çok Katmanlı Ödül Modeli**: TensorFlow tabanlı nöral ağ ile akıl yürütme kalitesini değerlendirme
 
 #### 🌐 Web Arama Özellikleri
-- **Maksimum Web Sitesi Tarama**: Tek bir sorguda 5 farklı web kaynağını analiz etme
-- **Akıllı Bilgi Çıkarma**: Web sonuçlarından en alakalı 3 içeriği seçme
+- **Maksimum Web Sitesi Tarama**: Tek bir sorguda 10 farklı web kaynağını analiz etme
+- **Akıllı Bilgi Çıkarma**: Web sonuçlarından en alakalı 10 içeriği seçme
 - **Dinamik Bağlam Güncelleme**: Her adımda web içeriğine göre sorguyu rafine etme
 
 #### 🔍 Akıl Yürütme Adımları
