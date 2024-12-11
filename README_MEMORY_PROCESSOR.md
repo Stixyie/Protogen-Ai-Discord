@@ -1,62 +1,67 @@
-# Memory Processor for Protogen AI
+# 🧠 Protogen AI Gelişmiş Hafıza İşlemcisi
 
-## Overview
-This system processes and saves memory files, sending them to the Groq API for context retention and advanced processing.
+## 🌟 Genel Bakış
+Protogen AI'nın gelişmiş hafıza yönetim sistemi, kullanıcı etkileşimlerini akıllıca işleyen ve analiz eden bir bellek işlemcisidir.
 
-## Features
-- Automatically save user messages as memory files
-- Reads JSON memory files from `memory` directory
-- Chunks memory content into 6000-token segments
-- Sends memory chunks to Groq API
-- Provides detailed logging of processing steps
+## ✨ Özellikler
+- 👤 Kullanıcı bazında dinamik hafıza gruplandırması
+- 💾 Sınırsız ve kalıcı sohbet geçmişi depolama
+- 🤖 Groq AI ile otomatik sohbet bağlamı analizi
+- 🕰️ Otomatik hafıza temizleme ve yönetme
+- 📊 Detaylı konuşma geçmişi ve kullanıcı eğilimi çıkarma
 
-## Setup
-1. Ensure all dependencies are installed:
-   ```
+## 🛠️ Kurulum
+1. Gerekli bağımlılıkları yükleyin:
+   ```bash
    pip install -r requirements.txt
    ```
 
-2. Set your Groq API key in `memory_processor.py`
+2. Groq API anahtarınızı ortam değişkenine ekleyin:
+   ```bash
+   export GROQ_API_KEY='your_api_key_here'
+   ```
 
-3. Place memory JSON files in the `bot_memory` directory
-
-## Memory Saving
-Use `save_user_message()` to save messages:
-
+## 💬 Kullanım Örneği
 ```python
-memory_processor = MemoryProcessor(memory_dir, groq_api_key)
-memory_processor.save_user_message(
-    message="Hello, how are you?", 
-    user_id="user123", 
-    context={"language": "Turkish", "mood": "friendly"}
+# Hafıza yöneticisini başlatma
+memory_manager = AdvancedMemoryManager()
+memory_integrator = GroqMemoryIntegrator(groq_key, memory_manager)
+
+# Kullanıcı mesajını kaydetme
+memory_manager.save_user_message(
+    user_id="discord_user_123", 
+    message="Merhaba, nasılsın?", 
+    is_bot=False
 )
+
+# Sohbet bağlamını analiz etme
+conversation_analysis = await memory_integrator.analyze_conversation_context("discord_user_123")
+print(conversation_analysis)
 ```
 
-## Memory File Structure
-Memory files are saved with a unique filename and JSON structure:
+## 📂 Hafıza Dosyası Yapısı
+Her kullanıcı için ayrı bir dizinde JSON formatında hafıza dosyaları:
 ```json
 {
-    "conversation_id": "unique_uuid",
-    "timestamp": "ISO8601_timestamp",
-    "context": {...},
-    "message": {
-        "user_id": "optional_user_id",
-        "content": "message_text",
-        "length": message_length
+    "timestamp": "2024-01-01T12:34:56Z",
+    "is_bot": false,
+    "message": "Kullanıcı mesajı",
+    "context": {
+        "ek_bilgiler": "varsa_buraya_eklenebilir"
     }
 }
 ```
 
-## Logging
-Detailed logs are saved in `memory_processor.log`
+## 🔍 Detaylı Analiz
+Groq AI ile her kullanıcı için:
+- Duygusal durum analizi
+- Konuşma eğilimleri
+- İlgi alanları tespiti
 
-## Usage
-Run the script directly:
-```
-python memory_processor.py
-```
+## 🚨 Günlükleme
+Tüm işlemler `advanced_memory.log` dosyasında detaylı olarak kaydedilir.
 
-## Dependencies
-- groq
-- tiktoken
-- python-dotenv
+## 🔒 Güvenlik
+- Kullanıcı verileri güvenli ve ayrı dizinlerde saklanır
+- Maksimum hafıza günü ayarlanabilir
+- Hassas bilgiler loglanmaz
