@@ -395,13 +395,17 @@ Unutma: Amacın kullanıcıya en iyi şekilde yardımcı olmak ve anlamlı bir i
                         print(f"Groq API Error: {resp.status} - {error_text}")
                         return "I'm experiencing some technical difficulties right now."
         
-        except aiohttp.ClientConnectorError:
+        except aiohttp.ClientConnectionError:
             print("Network error: Unable to connect to Groq API")
             return "Sorry, I'm having trouble connecting to my AI brain right now. Please try again later."
         
-        except aiohttp.ClientTimeout:
-            print("Groq API request timed out")
-            return "My response took too long. Could you please repeat your message?"
+        except aiohttp.ClientResponseError as e:
+            if e.status == 408:
+                print("Groq API request timed out")
+                return "My response took too long. Could you please repeat your message?"
+            else:
+                print(f"Groq API Error: {e.status} - {e.message}")
+                return "I'm experiencing some technical difficulties right now."
         
         except Exception as e:
             print(f"Unexpected error in Groq API call: {e}")
@@ -484,5 +488,6 @@ def main():
 
 if __name__ == "__main__":
     import asyncio
+    import aiohttp
     bot = DiscordBot(client)
     main()
