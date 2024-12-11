@@ -12,7 +12,7 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 - 🏆 Konuşma kalitesini değerlendiren ve optimize eden gelişmiş ödül hesaplama algoritması
 
 ### 2. 🌐 Gelişmiş Web Arama Entegrasyonu
-- 🌐 Derin İnternet Araması tam 300'e Kadar Web Sitesi Tarama
+- 🌐 Derin İnternet Araması tam 10'e Kadar Web Sitesi Tarama
 - 🌍 Otomatik olarak güncel bilgileri toplama yeteneği
 - 🔍 Çoklu kaynaklardan veri toplama ve filtreleme
 
@@ -168,7 +168,7 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-- 🚀 v2.1: Hata Düzeltmeleri Ve Özelik İyileştirmeleri 11.12.2024 tarihindeki
+- 🚀 v2.0: Hata Düzeltmeleri Ve Özelik İyileştirmeleri 11.12.2024 tarihindeki
 - 🔧 Sürekli geliştirme ve iyileştirmeler
 
 ## 🚨 Güvenlik Uyarıları

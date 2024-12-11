@@ -66,7 +66,7 @@ class ChainOfThoughtsSystem:
         
         for step in range(self.max_reasoning_steps):
             # Step 1: Web Search for Context
-            web_results = self.web_searcher.web_search(current_context, max_results=5)
+            web_results = self.web_searcher.web_search(current_context, max_results=10)
             
             # Step 2: Extract Key Information
             key_insights = self._extract_key_insights(web_results)
