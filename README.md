@@ -90,7 +90,7 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-- 🚀 v1.6: Hata Düzeltmeleri Ve Özelik İyileştirmeleri 10.12.2024 tarihindeki
+- 🚀 v1.7: Hata Düzeltmeleri Ve Özelik İyileştirmeleri 10.12.2024 tarihindeki
 - 🔧 Sürekli geliştirme ve iyileştirmeler
 
 ## 🚨 Güvenlik Uyarıları

@@ -10,6 +10,7 @@ typing==3.7.4.3
 duckduckgo-search==4.1.0
 dnspython==2.6.1
 requests[socks]==2.31.0
+tiktoken==0.5.2  # Added for token management
 
 # Yapay Zeka ve Makine Öğrenmesi Bağımlılıkları
 tensorflow==2.15.0
