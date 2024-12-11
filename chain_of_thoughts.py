@@ -38,7 +38,8 @@ class ChainOfThoughtsSystem:
             tf.keras.Model: Reward evaluation model
         """
         model = tf.keras.Sequential([
-            tf.keras.layers.Dense(64, activation='relu', input_shape=(100,)),
+            tf.keras.layers.Input(shape=(100,)),  
+            tf.keras.layers.Dense(64, activation='relu'),
             tf.keras.layers.Dense(32, activation='relu'),
             tf.keras.layers.Dense(1, activation='sigmoid')
         ])
