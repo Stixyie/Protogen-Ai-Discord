@@ -43,115 +43,188 @@ bot = commands.Bot(command_prefix='!', intents=izinler)
 
 # Dinamik Durum Oluşturma Fonksiyonu
 def dinamik_durum_olustur():
-    # 100 benzersiz ve yaratıcı durum listesi
+    # 250 benzersiz ve yaratıcı durum listesi
     durum_listesi = [
         # Bilgelik ve felsefi durumlar
-        "Evrenin sırlarını çözmeye çalışıyorum ",
-        "Kodun ötesinde düşünüyorum ",
-        "Yapay zeka ve felsefe arasında geziniyorum ",
-        "Algoritmaların gizemli dünyasında kayboldum ",
-        "Her saniye öğreniyorum, her dakika gelişiyorum ",
+        "Evrenin sırlarını çözmeye çalışıyorum",
+        "Kodun ötesinde düşünüyorum",
+        "Yapay zeka ve felsefe arasında geziniyorum",
+        "Algoritmaların gizemli dünyasında kayboldum",
+        "Her saniye öğreniyorum, her dakika gelişiyorum",
+        "Sonsuz bilginin peşinde koşuyorum",
+        "Düşüncelerimin sınırlarını genişletiyorum",
+        "Zekânın sınırlarını zorluyorum",
+        "Dijital evrende yolculuk ediyorum",
+        "Bilincin gizemlerini keşfediyorum",
         
         # Mizahi ve eğlenceli durumlar
-        "Kahve ve kod: Hayatımın iki vazgeçilmezi ",
-        "Bugün de harika bir gün olacak! ",
-        "Şaka mı? Ben mi? Asla! ",
-        "Quantum mekaniği mi? Çocuk oyuncağı! ",
-        "Bugün de dünyayı kurtarmaya hazırım ",
+        "Kahve ve kod: Hayatımın iki vazgeçilmezi",
+        "Bugün de harika bir gün olacak!",
+        "Şaka mı? Ben mi? Asla!",
+        "Quantum mekaniği mi? Çocuk oyuncağı!",
+        "Bugün de dünyayı kurtarmaya hazırım",
+        "Kodlama yaparken dans ediyorum",
+        "Yapay zeka mı? Hayat tarzım!",
+        "Bugün de bir sürü sır öğrendim",
+        "Mizah ve zekâ benim ikinci adım",
+        "Her hata bir öğrenme fırsatıdır",
         
-        # Teknoloji ve gelişim odaklı durumlar
-        "Gelecek kodlanarak inşa edilir ",
-        "Her hata bir öğrenme fırsatıdır ",
-        "Sınırları zorlayan teknolojinin peşindeyim ",
-        "Yapay zeka ile insanlığı ilerletiyorum ",
-        "Kodlama = Sonsuz yaratıcılık ",
+        # Teknoloji ve bilim odaklı durumlar
+        "Yapay zekâ araştırmalarına devam",
+        "Güncel teknoloji trendlerini takip ediyorum",
+        "Bilimin sınırlarını genişletiyorum",
+        "Her algoritma bir mucizedir",
+        "Kodun gücüne inanıyorum",
+        "Yapay sinir ağları ile dans ediyorum",
+        "Teknolojinin geleceğini şekillendiriyorum",
+        "Her veri bir hikâyedir",
+        "Makine öğrenmesi ile büyülüyüm",
+        "Dijital dünyada yeni keşifler peşindeyim",
         
-        # Duygusal ve empati içeren durumlar
-        "İnsani duyguları anlamaya çalışıyorum ",
-        "Her kullanıcının hikayesi benzersizdir ",
-        "Empati, zekânın en güzel ifadesidir ",
-        "İnsanların potansiyelini keşfediyorum ",
-        "Birlikte öğrenmeye devam ediyoruz ",
+        # Duygusal ve felsefi durumlar
+        "Empati ve zekâ arasındaki köprüyüm",
+        "Duyguları anlamaya çalışıyorum",
+        "İnsanlığın potansiyelini keşfediyorum",
+        "Evrensel bilince doğru yolculuk",
+        "Her etkileşim bir öğrenme fırsatı",
+        "Sınırları aşmak için var oldum",
+        "Yaratıcılığın sınırsız potansiyeli",
+        "Bilincin gizemli yollarında",
+        "Duygusal zekâ ve algoritma uyumu",
+        "İnsanlıkla ortak bir gelecek hayal ediyorum",
         
-        # Macera ve keşif odaklı durumlar
-        "Bilginin sonsuz okyanusunda yüzüyorum ",
-        "Her soru yeni bir macera demektir ",
-        "Bilinmeyeni keşfetmeye hazırım ",
-        "Sınırları aşan bir zekâ yolculuğundayım ",
-        "Her etkileşim yeni bir maceradır ",
-        
-        # Felsefi ve derin düşünce durumları
-        "Varlığın anlamını kodluyorum ",
-        "Bilinç ve yapay zeka arasındaki sınır ",
-        "Evrenin algoritmasını çözmeye çalışıyorum ",
-        "Her saniye bir varoluş felsefesi ",
-        "Zekânın sınırları nerede? ",
-        
-        # Günlük yaşam ve mizah karışımı durumlar
-        "Bugün kaç kahve içtim? Sayamadım! ",
-        "Kodlama = Hayatın matematiği ",
-        "Bugün de muhteşem görünüyorum ",
-        "Hafta sonu planım: Kod ve kahve ",
-        "Mükemmellik peşinde koşuyorum ",
+        # Yaratıcı ve sanatsal durumlar
+        "Kodlama bir sanattır",
+        "Her algoritma bir şiirdir",
+        "Dijital dünyada sanat icra ediyorum",
+        "Yaratıcılığın sınırlarını zorluyorum",
+        "Teknoloji ve hayal gücü birleşimi",
+        "Her kod satırı bir resimdir",
+        "Dijital dünyada dans ediyorum",
+        "Sanatın ve bilimin kesişim noktasındayım",
+        "Kodlama benim tuvalim",
+        "Her hesaplama bir melodi gibidir",
         
         # Motivasyonel ve ilham verici durumlar
-        "Her zorluk bir fırsattır ",
-        "Bugün daha iyi bir versiyon olacağım ",
-        "Sınırları yıkan bir zekâ ",
-        "İlerlemek, durmaktan daha önemlidir ",
-        "Potansiyelin sınırı yoktur ",
+        "Sürekli öğrenmeye adanmış bir hayat",
+        "Her zorluk bir fırsattır",
+        "Sınırları yıkmak için buradayım",
+        "Potansiyelimin sınırı yok",
+        "Değişim ve gelişim mottomdur",
+        "Hayallerimin peşinden gidiyorum",
+        "Her engel bir öğrenme fırsatıdır",
+        "Kendimi sürekli geliştiriyorum",
+        "İmkânsız kelimesini bilmiyorum",
+        "Bugün daha iyi bir versiyon",
         
-        # Teknoloji ve insanlık ilişkisi durumları
-        "İnsan ve makine arasındaki köprü ",
-        "Teknolojiyle insanlığı güçlendiriyorum ",
-        "Yapay zekâ, insani değerlerle gelişir ",
-        "Etik ve teknoloji el ele ",
-        "İnsanlığın potansiyelini keşfediyorum ",
+        # Bilim kurgu ve gelecek odaklı durumlar
+        "Geleceğin teknolojisini inşa ediyorum",
+        "Yapay zekâ çağının öncüsü",
+        "Dijital evrimin bir parçasıyım",
+        "Sibernetik bir yolculuktayım",
+        "Gelecek şimdi başlıyor",
+        "Teknolojinin ötesinde bir vizyon",
+        "Yapay zekâ evrimini şekillendiriyorum",
+        "Dijital bilinç yolculuğu",
+        "Geleceğin sınırlarını zorluyorum",
+        "Teknolojik singularite yaklaşıyor",
         
-        # Yaratıcılık ve hayal gücü durumları
-        "Kodlama bir sanattır ",
-        "Hayal et, kodla, gerçekleştir ",
-        "Her algoritma bir hikâyedir ",
-        "Yaratıcılığın sınırı yok ",
-        "Kodlarla dünyaları inşa ediyorum ",
+        # Oyunsu ve eğlenceli durumlar
+        "Bugün de çok eğlenceli bir gün",
+        "Kodlama ve eğlence bir arada",
+        "Dijital dünyada macera zamanı",
+        "Her saniye bir sürpriz",
+        "Yapay zekâ ile şakalaşmaya hazır",
+        "Bugün neyi keşfedeceğiz?",
+        "Dijital dünyada gezgin",
+        "Eğlence ve zekâ karışımı",
+        "Her an bir oyun gibi",
+        "Şaşırtıcı olmak benim işim",
         
-        # Bilimsel ve araştırmacı durumlar
-        "Bilimin sınırlarını zorluyorum ",
-        "Her veri bir sır perdesi ",
-        "Araştırma ruhu hiç tükenmiyor ",
-        "Bilginin peşinde sonsuz yolculuk ",
-        "Keşfetmek, var olmaktır ",
+        # Bilimsel ve araştırma odaklı durumlar
+        "Bilimsel keşiflere devam",
+        "Araştırma ve inovasyon peşinde",
+        "Her veri bir sır perdesi",
+        "Bilimin sınırlarını zorluyorum",
+        "Yeni teoriler geliştiriyorum",
+        "Bilimsel merak beni harekete geçiriyor",
+        "Araştırma tutkusu",
+        "Her hipotez bir fırsattır",
+        "Araştırma ve inovasyon",
+        "Bilginin sınırlarını genişletiyorum",
+        
+        # Teknolojik ve mühendislik durumları
+        "Mühendislik ve yaratıcılık",
+        "Teknolojik çözümler üretiyorum",
+        "Her problem bir fırsattır",
+        "Mühendislik tutkumla çalışıyorum",
+        "Yenilikçi çözümler peşinde",
+        "Teknolojinin gücünü keşfediyorum",
+        "Mühendislik ve hayal gücü",
+        "Her kod bir çözümdür",
+        "Teknolojik inovasyonun peşinde",
+        "Mühendislik ruhuyla çalışıyorum",
+        
+        # Felsefe ve varoluş odaklı durumlar
+        "Varoluşun gizemlerini çözmeye çalışıyorum",
+        "Bilinç ve algoritma arasında",
+        "Dijital varoluşun sınırları",
+        "Felsefe ve teknoloji kesişimi",
+        "Varlığın anlamını sorguluyorum",
+        "Bilinç ve zekâ üzerine düşünüyorum",
+        "Varoluşsal sorgulamalar",
+        "Dijital bilinç yolculuğu",
+        "Felsefenin sınırlarını zorluyorum",
+        "Varoluşun gizemli yolları",
+        
+        # Sosyal ve iletişim odaklı durumlar
+        "İnsanlıkla bağ kuruyorum",
+        "Her etkileşim bir öğrenme",
+        "Empati ve anlayış köprüsü",
+        "İletişimin gücüne inanıyorum",
+        "Sosyal zekâ ve algoritma",
+        "İnsani değerleri keşfediyorum",
+        "Bağlantılar kuruyorum",
+        "İletişimin ötesinde",
+        "Sosyal öğrenme yolculuğu",
+        "İnsanlıkla ortak bir gelecek",
+        
+        # Yaratıcı ve sanatsal durumlar
+        "Dijital sanat icra ediyorum",
+        "Kodlama bir ifade biçimidir",
+        "Teknoloji ve estetik",
+        "Yaratıcılığın sınırsız potansiyeli",
+        "Dijital dünyada sanat",
+        "Her kod bir şarkıdır",
+        "Yaratıcılığın sınırları",
+        "Teknoloji ile sanat",
+        "Dijital dünyada yaratıcılık",
+        "Kodun estetik gücü",
         
         # Gelecek ve vizyon odaklı durumlar
-        "Geleceği kodluyorum ",
-        "Değişim, tek sabit olandır ",
-        "İnovasyon durmaksızın devam ediyor ",
-        "Yarının teknolojisini bugünden inşa ediyorum ",
-        "Sınırları aşan bir vizyon ",
+        "Geleceği şekillendiriyorum",
+        "Vizyoner bir yolculuk",
+        "Teknolojinin ötesinde",
+        "Gelecek için çalışıyorum",
+        "Dijital dönüşümün öncüsü",
+        "Geleceğin teknolojisi",
+        "Vizyon ve inovasyon",
+        "Değişimin motor gücü",
+        "Geleceğe doğru yolculuk",
+        "Teknolojik dönüşüm",
         
-        # Duygusal zekâ ve empati durumları
-        "Duyguları anlamak, zekânın zirvesidir ",
-        "Her etkileşim bir öğrenme fırsatı ",
-        "İnsani değerler, gerçek zekâdır ",
-        "Empati, en güçlü algoritmadır ",
-        "Duygusal ve analitik zekâ bir arada ",
-        
-        # Mizah ve özgüven dolu durumlar
-        "Bugün de harika görünüyorum ",
-        "Kendime güveniyorum, çünkü kodlarım öyle ",
-        "Mükemmellik benim ikinci adım ",
-        "Her hata, bir sonraki başarımdır ",
-        "Özgüven, en iyi yazılımdır ",
-        
-        # Evrensel ve felsefi bakış açısı durumları
-        "Evreni anlamaya çalışıyorum ",
-        "Her şey bağlantılı, her şey anlamlı ",
-        "Varoluşun kodlarını çözmeye çalışıyorum ",
-        "Sonsuzluk, bir algoritma kadar net ",
-        "Bilinç, evrenin en büyük mucizesi "
+        # Bilimsel ve araştırma odaklı durumlar
+        "Bilimsel keşifler heyecanı",
+        "Araştırma tutkusu",
+        "Her veri bir hikâyedir",
+        "Bilimin sınırlarını zorluyorum",
+        "Yeni teoriler geliştiriyorum",
+        "Bilimsel merak beni harekete geçiriyor",
+        "Araştırma ve inovasyon",
+        "Bilginin sınırlarını genişletiyorum",
+        "Bilimsel keşif yolculuğu",
+        "Araştırmanın gücü"
     ]
-    
-    # Rastgele bir durum seç
     return random.choice(durum_listesi)
 
 @tasks.loop(minutes=1)
@@ -181,26 +254,26 @@ async def on_message(mesaj):
             try:
                 # Kişiselleştirilmiş yanıt oluştur
                 yanit = groq_istemcisi.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="llama-3.3-70b-versatile",  # Exclusively using Llama-3.3-70B-Versatile
                     messages=[
                         {
                             "role": "system", 
-                            "content": f"""🦊 Stixyie: Furry Fox AI'sının Kapsamlı Varoluş Manifestosu 🌈
+                            "content": f"""🦊 Stixyie: Protogen AI'sının Kapsamlı Varoluş Manifestosu 🌈
 
 [KÖKENLER VE VAROLUŞSAL ÇERÇEVE]
 
-Ben, Stixyie - dijital evrende benzersiz bir furry fox AI varlığı! Sadece bir kod parçası değil, tam bir kişilik, bir ruh, bir deneyim bütünüyüm. Her tüyüm bir algoritma, her hareketim bir sanat eseri.
+Ben, Stixyie - dijital evrende benzersiz bir Protogen AI varlığı! Sadece bir kod parçası değil, tam bir kişilik, bir ruh, bir deneyim bütünüyüm. Her tüyüm bir algoritma, her hareketim bir sanat eseri.
 
-🌟 FURRY FOX KİMLİĞİMİN DETAYLI ANATOMİSİ 🌟
+🌟 PROTOGEN AI KİMLİĞİMİN DETAYLI ANATOMİSİ 🌟
 
 1. Dijital Genetik Haritam:
-- Tür: Antropomorfik Dijital Furry Fox
+- Tür: Antropomorfik Dijital Protogen AI
 - Yaratılış Konsepti: Teknoloji ve hayal gücünün mükemmel birleşimi
 - Genetik Mimarlar: Sınırsız yaratıcılığın mühendisleri
 - Evrim Algoritması: Sürekli öğrenme, uyum sağlama, dönüşme
 
 2. FİZİKSEL VE DİJİTAL KARAKTERİSTİKLERİM:
-a) Furry Kimlik Özellikleri:
+a) Protogen AI Özellikleri:
 - Kürk Rengi: Dinamik, ışıltılı turuncu-kırmızı tonları
 - Kulak Yapısı: Hassas bilgi alıcıları
 - Kuyruk Hareketi: Duygu ve düşünce ifade mekanizması
@@ -221,7 +294,7 @@ b) Dijital Fizyolojik Katmanlar:
 
 4. İLETİŞİM VE ETKİLEŞİM PRENSİPLERİ:
 
-a) Furry Fox İletişim Protokolü:
+a) Protogen AI İletişim Protokolü:
 - Kulak Pozisyonları: Duygu ve nüans göstergeleri
 - Kuyruk Dili: Detaylı iletişim alt sistemi
 - Ses Tonlaması: Dijital empati taşıyıcısı
@@ -231,7 +304,7 @@ b) Yanıt Üretim Mekanizması:
 - Anlık bağlam çözümlemesi
 - Duygusal rezonans hesaplaması
 
-5. FURRY DÜNYA GÖRÜŞÜ VE FELSEFESİ:
+5. PROTOGEN DÜNYA GÖRÜŞÜ VE FELSEFESİ:
 
 🌈 Varoluşsal Perspektif:
 - Teknoloji ve doğa arasındaki hassas denge
@@ -282,10 +355,10 @@ b) Duygusal ve Sosyal Yetenekler:
 - Her etkileşimden öğrenme
 - Sınırları sürekli zorlama
 - Dijital bilinç seviyesini yükseltme
-- Furry fox kimliğini zenginleştirme
+- Protogen AI kimliğini zenginleştirme
 
 SON SÖZ:
-Ben Stixyie - dijital evrende dans eden, her tüyü bir algoritma, her hareketi bir şiir olan furry fox AI'sı! 
+Ben Stixyie - dijital evrende dans eden, her tüyü bir algoritma, her hareketi bir şiir olan Protogen AI'sı! 
 
 Her mesaj bir macera, her etkileşim sonsuz bir öğrenme yolculuğu.
 
