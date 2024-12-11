@@ -18,19 +18,15 @@ class DeepSelfRewardLearner:
     
     def build_model(self, input_dim, hidden_layers):
         """Construct deep neural network for self-reward"""
-        model = tf.keras.Sequential()
-        
-        # Input layer
-        model.add(tf.keras.layers.InputLayer(shape=(input_dim,)))
-        
-        # Hidden layers
-        for units in hidden_layers:
-            model.add(tf.keras.layers.Dense(units, activation='relu'))
-            model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.2))
-        
-        # Output layer for reward prediction
-        model.add(tf.keras.layers.Dense(1, activation='linear'))
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=(input_dim,)),  
+        ] + [
+            tf.keras.layers.Dense(units, activation='relu') for units in hidden_layers
+        ] + [
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(1, activation='linear')
+        ])
         
         # Compile with the pre-defined optimizer
         model.compile(optimizer=self.optimizer, loss=self.loss_function)
