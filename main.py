@@ -175,7 +175,575 @@ class DeepSelfRewardSystem:
         update_thread = threading.Thread(target=periodic_system_update, daemon=True)
         update_thread.start()
 
+class TopicTracker:
+    def __init__(self, max_context_length=10, similarity_threshold=0.7):
+        """
+        Advanced topic tracking system with multi-level context understanding
+        
+        Args:
+            max_context_length (int): Maximum number of previous messages to track
+            similarity_threshold (float): Minimum similarity score to consider a topic continuous
+        """
+        self.conversation_context = {}
+        self.max_context_length = max_context_length
+        self.similarity_threshold = similarity_threshold
+        
+        # Advanced NLP libraries for semantic analysis
+        try:
+            import spacy
+            import sentence_transformers
+            
+            # Explicit model download and loading
+            try:
+                self.nlp = spacy.load('en_core_web_md')
+            except OSError:
+                logging.warning("SpaCy model 'en_core_web_md' not found. Please download using: python -m spacy download en_core_web_md")
+                self.nlp = None
+            
+            try:
+                self.sentence_transformer = sentence_transformers.SentenceTransformer('all-MiniLM-L6-v2')
+            except Exception as e:
+                logging.warning(f"Failed to load sentence transformer: {e}")
+                self.sentence_transformer = None
+        
+        except ImportError as e:
+            logging.error(f"NLP library import failed: {e}")
+            logging.warning("Advanced NLP libraries not found. Falling back to basic similarity.")
+            self.nlp = None
+            self.sentence_transformer = None
+    
+    def _compute_semantic_similarity(self, text1, text2):
+        """
+        Compute advanced semantic similarity between two texts
+        
+        Returns:
+            float: Similarity score between 0 and 1
+        """
+        if self.sentence_transformer:
+            # Use sentence transformer for advanced semantic similarity
+            embeddings = self.sentence_transformer.encode([text1, text2])
+            similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+            return similarity
+        
+        # Fallback to basic similarity if advanced libraries not available
+        return self._basic_similarity(text1, text2)
+    
+    def _basic_similarity(self, text1, text2):
+        """
+        Basic text similarity using word overlap
+        
+        Returns:
+            float: Similarity score between 0 and 1
+        """
+        words1 = set(text1.lower().split())
+        words2 = set(text2.lower().split())
+        
+        intersection = len(words1.intersection(words2))
+        union = len(words1.union(words2))
+        
+        return intersection / union if union > 0 else 0
+    
+    def _extract_topic_keywords(self, text):
+        """
+        Extract key topics and entities from text
+        
+        Returns:
+            list: Important keywords and entities
+        """
+        if self.nlp:
+            doc = self.nlp(text)
+            # Extract nouns, proper nouns, and named entities
+            keywords = [
+                token.text for token in doc 
+                if token.pos_ in ['NOUN', 'PROPN'] or token.ent_type_
+            ]
+            return list(set(keywords))
+        
+        # Fallback to basic keyword extraction
+        return list(set(text.lower().split()))
+    
+    def track_topic(self, user_id, message):
+        """
+        Track and analyze conversation topic for a specific user
+        
+        Args:
+            user_id (str): Unique identifier for the user
+            message (str): Current message to analyze
+        
+        Returns:
+            dict: Topic tracking information
+        """
+        if user_id not in self.conversation_context:
+            self.conversation_context[user_id] = []
+        
+        # Manage context length
+        if len(self.conversation_context[user_id]) >= self.max_context_length:
+            self.conversation_context[user_id].pop(0)
+        
+        # Extract current message keywords
+        current_keywords = self._extract_topic_keywords(message)
+        
+        # Analyze topic continuity
+        topic_continuity_score = 0
+        related_previous_messages = []
+        
+        for prev_message in reversed(self.conversation_context[user_id]):
+            similarity = self._compute_semantic_similarity(message, prev_message)
+            
+            if similarity >= self.similarity_threshold:
+                topic_continuity_score += similarity
+                related_previous_messages.append(prev_message)
+        
+        # Add current message to context
+        self.conversation_context[user_id].append(message)
+        
+        return {
+            'current_keywords': current_keywords,
+            'topic_continuity_score': topic_continuity_score,
+            'related_messages': related_previous_messages,
+            'is_topic_continuous': topic_continuity_score > 0
+        }
+    
+    def generate_topic_summary(self, user_id):
+        """
+        Generate a summary of the conversation topic for a user
+        
+        Args:
+            user_id (str): Unique identifier for the user
+        
+        Returns:
+            str: Summarized conversation topic
+        """
+        if user_id not in self.conversation_context or not self.conversation_context[user_id]:
+            return "No conversation context available."
+        
+        # Use advanced NLP for topic summarization if available
+        if self.nlp:
+            context = " ".join(self.conversation_context[user_id])
+            doc = self.nlp(context)
+            
+            # Extract most important sentences
+            sentences = [sent.text for sent in doc.sents]
+            summary = max(sentences, key=len)  # Simple summary strategy
+            
+            return f"Current Topic Summary: {summary}"
+        
+        # Fallback summary
+        keywords = set()
+        for message in self.conversation_context[user_id]:
+            keywords.update(self._extract_topic_keywords(message))
+        
+        return f"Current Topic Keywords: {', '.join(keywords)}"
+
+try:
+    from sklearn.metrics.pairwise import cosine_similarity
+except ImportError:
+    def cosine_similarity(X, Y):
+        """Basic cosine similarity implementation if sklearn is not available"""
+        import numpy as np
+        def _cosine_similarity(x, y):
+            return np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
+        return [[_cosine_similarity(x, y) for y in Y] for x in X]
+
+class PromptEngineeringSystem:
+    def __init__(self, 
+                 context_depth=5, 
+                 dynamic_prompt_adaptation=True,
+                 semantic_complexity_level=0.8):
+        """
+        Advanced Prompt Engineering System with Multi-Dimensional Context Processing
+        
+        Args:
+            context_depth (int): Number of previous interactions to consider
+            dynamic_prompt_adaptation (bool): Enable adaptive prompt generation
+            semantic_complexity_level (float): Sophistication of prompt generation
+        """
+        self.context_memory = {}
+        self.context_depth = context_depth
+        self.dynamic_prompt_adaptation = dynamic_prompt_adaptation
+        self.semantic_complexity_level = semantic_complexity_level
+        
+        # Advanced NLP and Machine Learning Components
+        try:
+            import spacy
+            import sentence_transformers
+            import numpy as np
+            
+            self.nlp = spacy.load('en_core_web_md')
+            self.sentence_transformer = sentence_transformers.SentenceTransformer('all-MiniLM-L6-v2')
+            self.np = np
+        except ImportError:
+            logging.warning("Advanced NLP libraries not available for Prompt Engineering")
+            self.nlp = None
+            self.sentence_transformer = None
+            self.np = None
+    
+    def _extract_semantic_features(self, text):
+        """
+        Extract advanced semantic features from text
+        
+        Returns:
+            dict: Semantic feature representation
+        """
+        if not self.nlp or not self.sentence_transformer:
+            return {'raw_text': text}
+        
+        # Semantic embedding
+        embedding = self.sentence_transformer.encode(text)
+        
+        # Linguistic analysis
+        doc = self.nlp(text)
+        
+        # Advanced feature extraction
+        features = {
+            'embedding': embedding.tolist(),
+            'entities': [
+                {
+                    'text': ent.text, 
+                    'label': ent.label_
+                } for ent in doc.ents
+            ],
+            'pos_tags': [
+                {
+                    'text': token.text, 
+                    'pos': token.pos_, 
+                    'dependency': token.dep_
+                } for token in doc
+            ],
+            'sentiment': self._analyze_sentiment(text),
+            'complexity_score': self._compute_text_complexity(text)
+        }
+        
+        return features
+    
+    def _analyze_sentiment(self, text):
+        """
+        Advanced sentiment analysis
+        
+        Returns:
+            dict: Sentiment scores and interpretation
+        """
+        try:
+            from textblob import TextBlob
+            blob = TextBlob(text)
+            return {
+                'polarity': blob.sentiment.polarity,
+                'subjectivity': blob.sentiment.subjectivity,
+                'interpretation': (
+                    'Positive' if blob.sentiment.polarity > 0.2 else
+                    'Negative' if blob.sentiment.polarity < -0.2 else
+                    'Neutral'
+                )
+            }
+        except ImportError:
+            return {'sentiment': 'unavailable'}
+    
+    def _compute_text_complexity(self, text):
+        """
+        Compute text complexity using multiple metrics
+        
+        Returns:
+            float: Complexity score
+        """
+        # Linguistic complexity metrics
+        words = text.split()
+        unique_words = set(words)
+        
+        complexity_factors = {
+            'word_count': len(words),
+            'unique_word_ratio': len(unique_words) / len(words) if words else 0,
+            'avg_word_length': sum(len(word) for word in words) / len(words) if words else 0,
+            'sentence_length_variation': self._sentence_length_variation(text)
+        }
+        
+        # Combine factors into a single complexity score
+        complexity_score = sum(complexity_factors.values()) / len(complexity_factors)
+        return complexity_score
+    
+    def _sentence_length_variation(self, text):
+        """
+        Calculate sentence length variation
+        
+        Returns:
+            float: Variation in sentence lengths
+        """
+        if not self.nlp:
+            return 0
+        
+        doc = self.nlp(text)
+        sentence_lengths = [len(list(sent)) for sent in doc.sents]
+        
+        if not sentence_lengths:
+            return 0
+        
+        return self.np.std(sentence_lengths) if len(sentence_lengths) > 1 else 0
+    
+    def generate_contextual_prompt(self, 
+                                   user_id, 
+                                   message, 
+                                   previous_context=None, 
+                                   system_state=None):
+        """
+        Generate a sophisticated, context-aware prompt
+        
+        Args:
+            user_id (str): Unique user identifier
+            message (str): Current user message
+            previous_context (list): Previous conversation context
+            system_state (dict): Current system state and configuration
+        
+        Returns:
+            dict: Comprehensive prompt with multiple dimensions
+        """
+        # Semantic feature extraction
+        semantic_features = self._extract_semantic_features(message)
+        
+        # Manage conversation context
+        if user_id not in self.context_memory:
+            self.context_memory[user_id] = []
+        
+        # Update context memory
+        self.context_memory[user_id].append({
+            'message': message,
+            'features': semantic_features
+        })
+        
+        # Trim context memory
+        if len(self.context_memory[user_id]) > self.context_depth:
+            self.context_memory[user_id].pop(0)
+        
+        # Dynamic prompt generation
+        prompt_template = self._generate_prompt_template(
+            semantic_features, 
+            previous_context or self.context_memory[user_id],
+            system_state
+        )
+        
+        # Adaptive complexity adjustment
+        if self.dynamic_prompt_adaptation:
+            prompt_template = self._adjust_prompt_complexity(prompt_template)
+        
+        return {
+            'base_message': message,
+            'semantic_features': semantic_features,
+            'prompt_template': prompt_template,
+            'context_history': self.context_memory[user_id]
+        }
+    
+    def _generate_prompt_template(self, 
+                                  semantic_features, 
+                                  context_history, 
+                                  system_state=None):
+        """
+        Generate a multi-dimensional prompt template
+        
+        Returns:
+            dict: Comprehensive prompt template
+        """
+        # Advanced prompt engineering with multiple dimensions
+        prompt_template = {
+            'context': {
+                'semantic_context': semantic_features,
+                'conversation_history': [
+                    entry['message'] for entry in context_history
+                ]
+            },
+            'instruction_set': {
+                'primary_directive': (
+                    "Engage in a nuanced, context-aware conversation. "
+                    "Analyze the semantic depth, emotional undertones, "
+                    "and implicit meaning of the user's message."
+                ),
+                'response_guidelines': [
+                    "Maintain contextual coherence",
+                    "Demonstrate deep understanding",
+                    "Provide insightful and empathetic responses",
+                    "Adapt communication style to user's semantic profile"
+                ]
+            },
+            'persona_configuration': {
+                'communication_style': self._determine_communication_style(semantic_features),
+                'emotional_intelligence': self._assess_emotional_intelligence(semantic_features)
+            },
+            'knowledge_integration': {
+                'domain_relevance': self._compute_domain_relevance(semantic_features),
+                'contextual_knowledge_weight': self.semantic_complexity_level
+            },
+            'dynamic_parameters': {
+                'response_creativity': self._calculate_creativity_level(semantic_features),
+                'empathy_coefficient': self._compute_empathy_score(semantic_features)
+            }
+        }
+        
+        return prompt_template
+    
+    def _determine_communication_style(self, semantic_features):
+        """
+        Analyze and determine appropriate communication style
+        
+        Returns:
+            str: Recommended communication approach
+        """
+        sentiment = semantic_features.get('sentiment', {})
+        
+        communication_styles = {
+            'academic': sentiment.get('polarity', 0) < -0.3,
+            'casual': -0.3 <= sentiment.get('polarity', 0) <= 0.3,
+            'enthusiastic': sentiment.get('polarity', 0) > 0.3
+        }
+        
+        return max(communication_styles, key=communication_styles.get)
+    
+    def _assess_emotional_intelligence(self, semantic_features):
+        """
+        Compute emotional intelligence based on semantic analysis
+        
+        Returns:
+            dict: Emotional intelligence metrics
+        """
+        sentiment = semantic_features.get('sentiment', {})
+        
+        return {
+            'emotional_depth': sentiment.get('subjectivity', 0),
+            'emotional_tone': sentiment.get('interpretation', 'Neutral'),
+            'empathy_potential': abs(sentiment.get('polarity', 0))
+        }
+    
+    def _compute_domain_relevance(self, semantic_features):
+        """
+        Compute domain relevance and knowledge integration
+        
+        Returns:
+            float: Domain relevance score
+        """
+        entities = semantic_features.get('entities', [])
+        pos_tags = semantic_features.get('pos_tags', [])
+        
+        domain_indicators = {
+            'technical': sum(1 for ent in entities if ent['label'] in ['ORG', 'PRODUCT']),
+            'academic': sum(1 for tag in pos_tags if tag['pos'] in ['NOUN', 'ADJ']),
+            'conversational': sum(1 for tag in pos_tags if tag['pos'] in ['VERB', 'ADV'])
+        }
+        
+        return max(domain_indicators, key=domain_indicators.get)
+    
+    def _calculate_creativity_level(self, semantic_features):
+        """
+        Calculate response creativity based on semantic complexity
+        
+        Returns:
+            float: Creativity level
+        """
+        complexity_score = semantic_features.get('complexity_score', 0.5)
+        return min(1, complexity_score * 1.5)
+    
+    def _compute_empathy_score(self, semantic_features):
+        """
+        Compute empathy score based on semantic analysis
+        
+        Returns:
+            float: Empathy score
+        """
+        sentiment = semantic_features.get('sentiment', {})
+        return abs(sentiment.get('polarity', 0)) * sentiment.get('subjectivity', 0)
+    
+    def _adjust_prompt_complexity(self, prompt_template):
+        """
+        Dynamically adjust prompt complexity
+        
+        Returns:
+            dict: Complexity-adjusted prompt template
+        """
+        complexity_multiplier = self.semantic_complexity_level
+        
+        # Dynamically modify prompt template based on complexity
+        prompt_template['dynamic_parameters']['complexity_factor'] = complexity_multiplier
+        
+        # Adjust instruction set based on complexity
+        if complexity_multiplier > 0.7:
+            prompt_template['instruction_set']['response_guidelines'].extend([
+                "Employ advanced linguistic strategies",
+                "Integrate multi-disciplinary perspectives",
+                "Demonstrate meta-cognitive reasoning"
+            ])
+        
+        return prompt_template
+
 class DiscordBot:
+    async def process_message_with_advanced_topic_tracking(self, message):
+        """
+        Advanced message processing using Prompt Engineering and Topic Tracking
+        
+        Args:
+            message (discord.Message): Incoming Discord message
+        
+        Returns:
+            str: Processed response with advanced context understanding
+        """
+        # Convert user ID to string for consistency
+        user_id = str(message.author.id)
+        user_message = message.content
+        
+        # 1. Generate contextual prompt using Prompt Engineering System
+        prompt_context = self.prompt_engineering.generate_contextual_prompt(
+            user_id, 
+            user_message
+        )
+        
+        # 2. Track topic using TopicTracker
+        topic_info = self.topic_tracker.track_topic(
+            user_id, 
+            user_message
+        )
+        
+        # 3. Combine insights from both systems
+        combined_context = {
+            'prompt_engineering': prompt_context,
+            'topic_tracking': topic_info
+        }
+        
+        # 4. Log advanced tracking information
+        logging.info(f"Advanced Topic Tracking for {user_id}: {combined_context}")
+        
+        # 5. Use Chain of Thoughts for reasoning with combined context
+        reasoning_result = self.chain_of_thoughts.reason(
+            user_message, 
+            context=combined_context
+        )
+        
+        # 6. Generate response using Groq AI with comprehensive context
+        response = await self.call_groq_ai(
+            user_message, 
+            additional_context={
+                'prompt_context': prompt_context,
+                'topic_info': topic_info,
+                'reasoning': reasoning_result
+            }
+        )
+        
+        # 7. Optional: Generate topic summary if conversation drifts
+        if not topic_info['is_topic_continuous']:
+            topic_summary = self.topic_tracker.generate_topic_summary(user_id)
+            response += f"\n\n{topic_summary}"
+        
+        return response
+    
+    async def on_message(self, message):
+        # Prevent bot from responding to itself
+        if message.author == self.client.user:
+            return
+        
+        try:
+            # Use advanced topic tracking for message processing
+            response = await self.process_message_with_advanced_topic_tracking(message)
+            
+            # Send response
+            await message.channel.send(response)
+        
+        except Exception as e:
+            logging.error(f"Error processing message: {e}")
+            await message.channel.send("I encountered an error processing your message. Please try again.")
+
     def __init__(self, client):
         self.client = client
         self.user_memory = {}
@@ -203,6 +771,19 @@ class DiscordBot:
         
         # Initialize Typing Manager
         self.typing_manager = TypingManager(client)
+        
+        # Initialize Topic Tracker with enhanced configuration
+        self.topic_tracker = TopicTracker(
+            max_context_length=15,  # Increased context tracking
+            similarity_threshold=0.7  # Semantic similarity threshold
+        )
+        
+        # Initialize Advanced Prompt Engineering System
+        self.prompt_engineering = PromptEngineeringSystem(
+            context_depth=7,  # Track up to 7 previous interactions
+            dynamic_prompt_adaptation=True,
+            semantic_complexity_level=0.85  # High sophistication
+        )
 
     def load_memory(self):
         for user_id in memory_manager.get_user_ids():
@@ -432,6 +1013,10 @@ REMEMBER: You are not just an AI, but a unique conversational partner with your 
 
                 # Optional: Save reasoning trace
                 self.chain_of_thoughts.save_reasoning_trace(f'reasoning_trace_{user_id}.json')
+
+                # Track topic with advanced topic tracker
+                topic_info = self.topic_tracker.track_topic(user_id, user_message_str)
+                print(f"Topic Tracking Info: {topic_info}")
 
                 return response
         

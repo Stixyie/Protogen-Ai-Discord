@@ -1,4 +1,4 @@
-# 🤖 Protogen AI Discord Bot 
+# 🤖 Protogen AI Discord Botu 
 
 ## 🌟 Proje Genel Bakış
 
@@ -12,7 +12,7 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 - 🏆 Konuşma kalitesini değerlendiren ve optimize eden gelişmiş ödül hesaplama algoritması
 
 ### 2. 🌐 Gelişmiş Web Arama Entegrasyonu
-- 🌐 Derin İnternet Araması tam 20'e Kadar Web Sitesi Tarama
+- 🌐 Derin İnternet Araması ile 20'ye Kadar Web Sitesi Tarama
 - 🌍 Otomatik olarak güncel bilgileri toplama yeteneği
 - 🔍 Çoklu kaynaklardan veri toplama ve filtreleme
 
@@ -113,49 +113,52 @@ Bu gelişmiş Discord yapay zeka botu, derin öğrenme, özödül mekanizmaları
 - 🏋️ Sürekli model eğitimi
 - 🕰️ Periyodik sistem güncellemeleri
 
-## 🛠️ Gereksinimler
+## 🛠️ Kurulum
+
+### Ön Gereksinimler
 - 🐍 Python 3.8+
-- 🤖 Discord hesabı
-- 🔑 Groq API anahtarı
-- 📦 Gerekli Python paketleri:
-  - 💬 discord.py
-  - 🧠 tensorflow
-  - 🔧 python-dotenv
-  - 🌐 aiohttp
-  - 🔢 numpy
+- 📦 pip
+- 🔧 Sanal Ortam (Önerilen)
 
-## 🚀 Kurulum
+### Kurulum Adımları
 
-1. 📥 Depoyu klonlayın:
+1. Depoyu Klonlama:
 ```bash
-git clone https://github.com/stixyie/Protogen-Ai-Discord.git
-cd Protogen-Ai-Discord
+git clone https://github.com/kullanici_adi/Protogen-Ai-Discord-main.git
+cd Protogen-Ai-Discord-main
 ```
 
-2. 🏗️ Sanal ortam oluşturun:
+2. Sanal Ortam Oluşturma:
 ```bash
 python -m venv venv
-source venv/bin/activate  # Windows için: venv\Scripts\activate
+# Windows için: venv\Scripts\activate
+# Linux/Mac için: source venv/bin/activate
 ```
 
-3. 📦 Gerekli paketleri yükleyin:
+3. Bağımlılıkları Yükleme:
 ```bash
-pip install -r requirements.txt
+python setup.py
 ```
 
-4. 🔐 `.env` dosyasını oluşturun:
+4. Ortam Değişkenlerini Yapılandırma:
+- Proje kök dizininde `.env` dosyası oluşturun
+- Discord ve Groq API anahtarlarınızı ekleyin:
 ```
-DISCORD_TOKEN=sizin_discord_tokeniniz
-GROQ_API_KEY=sizin_groq_api_anahtarınız
+DISCORD_TOKEN=discord_token_buraya
+GROQ_API_KEY=groq_api_key_buraya
 ```
 
-## 🖥️ Çalıştırma
+5. Botu Çalıştırma:
 ```bash
 python main.py
 ```
 
+## 🚨 Güvenlik Uyarıları
+- 🔐 API anahtarlarınızı asla paylaşmayın
+- 🙈 `.env` dosyasını `.gitignore`a ekleyin
+
 ## 🤝 Katkıda Bulunma
-1. 🍴 Fork yapın
+1. 🍴 Depoyu forklayın
 2. 🌿 Yeni özellik dalı oluşturun (`git checkout -b yeni-ozellik`)
 3. 💾 Değişikliklerinizi kaydedin (`git commit -m 'Yeni özellik ekle'`)
 4. 📤 Dalınıza push yapın (`git push origin yeni-ozellik`)
@@ -168,11 +171,6 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-🚀 v2.4: Hata Düzeltmeleri 13.12.2024 tarihindeki
-- 🔧 Sürekli geliştirme ve iyileştirmeler
-
-## 🚨 Güvenlik Uyarıları
-- 🔐 API anahtarlarınızı asla paylaşmayın
-- 🙈 `.env` dosyasını `.gitignore`a ekleyin
+🚀 v2.4: Hata Düzeltmeleri ve Performans İyileştirmeleri (13.12.2024)
 
 **⚠️ Uyarı**: Bu bot deneysel bir yapay zeka projesidir ve sınırlamaları olabilir. Her zaman sorumlu bir şekilde kullanın. 🤖🧠
