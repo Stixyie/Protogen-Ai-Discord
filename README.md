@@ -171,6 +171,6 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-🚀 v2.4: Hata Düzeltmeleri ve Performans İyileştirmeleri (13.12.2024)
+🚀 v2.5: Hata Düzeltmeleri ve Performans İyileştirmeleri (13.12.2024)
 
 **⚠️ Uyarı**: Bu bot deneysel bir yapay zeka projesidir ve sınırlamaları olabilir. Her zaman sorumlu bir şekilde kullanın. 🤖🧠
