@@ -7,7 +7,7 @@ import threading
 import numpy as np
 import time
 import logging
-from groq import Client as Groq
+from groq import Groq
 import asyncio
 from dotenv import load_dotenv
 
@@ -55,10 +55,17 @@ class PersistentMemoryManager:
         try:
             groq_api_key = os.getenv('GROQ_API_KEY')
             if not groq_api_key:
-                raise ValueError("Groq API Key not found in environment variables")
-            self.groq_client = Groq(api_key=groq_api_key)
+                logger.error("Groq API Key is not set in environment variables")
+                self.groq_client = None
+            else:
+                try:
+                    self.groq_client = Groq(api_key=groq_api_key)
+                    logger.info("Groq client initialized successfully")
+                except Exception as init_error:
+                    logger.error(f"Failed to initialize Groq client: {init_error}")
+                    self.groq_client = None
         except Exception as e:
-            logger.error(f"Groq API Client Initialization Error: {e}")
+            logger.error(f"Unexpected error during Groq client setup: {e}")
             self.groq_client = None
         
         # Comprehensive memory storage structures
