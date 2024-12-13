@@ -168,7 +168,7 @@ python main.py
 Herhangi bir sorun veya öneri için 🐞 GitHub Issues'ı kullanabilirsiniz.
 
 ## 📝 Sürüm Notları
-- 🚀 v2.3: Hata Düzeltmeleri 11.12.2024 tarihindeki
+🚀 v2.4: Hata Düzeltmeleri 13.12.2024 tarihindeki
 - 🔧 Sürekli geliştirme ve iyileştirmeler
 
 ## 🚨 Güvenlik Uyarıları

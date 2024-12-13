@@ -13,15 +13,23 @@ requests[socks]==2.31.0
 tiktoken==0.5.2  # Added for token management
 
 # Yapay Zeka ve Makine Öğrenmesi Bağımlılıkları
-tensorflow==2.15.0
 numpy==1.26.3
 scikit-learn==1.3.2
-torch==2.1.2
+tensorflow==2.18.0
+keras
+protobuf==4.21.9
 
-# Chain of Thoughts Sistemi
-# Add these dependencies for Chain of Thoughts system
-tensorflow==2.15.0
-numpy==1.26.3
+# Gelişmiş Analiz ve Arama Bağımlılıkları
+asyncio==3.4.3
 
 # Günlükleme ve Hata Yönetimi
 rich==10.16.2
+
+# Ek Geliştirme Araçları
+pydantic==2.9.2
+python-dateutil==2.9.0
+
+# Required dependencies for the Groq API and web requests
+groq
+requests
+python-dotenv

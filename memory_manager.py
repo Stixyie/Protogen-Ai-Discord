@@ -7,7 +7,7 @@ import threading
 import numpy as np
 import time
 import logging
-from groq import Groq
+from groq import Client as Groq
 import asyncio
 from dotenv import load_dotenv
 
